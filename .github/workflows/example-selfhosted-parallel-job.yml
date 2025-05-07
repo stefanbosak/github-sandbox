@@ -1,0 +1,18 @@
+name: 'Example of parallel'
+
+on: workflow_dispatch
+
+jobs:
+  # running single job across multiple runners in the same time
+  parallel-job:
+    strategy:
+      matrix:
+        # set of unique self-hosted runners labels
+        runner: [self-hosted-1, self-hosted-2, self-hosted-3]
+    runs-on: ${{ matrix.runner }}
+    concurrency:
+      group: parallel-group-${{ matrix.runner }}
+      cancel-in-progress: false
+    steps:
+      - name: 'Run task'
+        run: echo "Running arch=$(uname -m) matrix_runner=${{ matrix.runner }} runner_name=${{ runner.name }} on hostname=$(hostname)"
