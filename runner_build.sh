@@ -19,8 +19,13 @@ docker buildx build --network=host --force-rm --rm \
                     --build-arg TARGETOS="${TARGETOS}" \
                     --build-arg RUNNER_VERSION="${RUNNER_VERSION}" \
                     --build-arg UBUNTU_RELEASE="${UBUNTU_RELEASE}" \
+                    --build-arg CONTAINER_USER="${CONTAINER_USER}" \
+                    --build-arg CONTAINER_GROUP="${CONTAINER_GROUP}" \
+                    --build-arg CONTAINER_USER_ID="${CONTAINER_USER_ID}" \
+                    --build-arg CONTAINER_GROUP_ID="${CONTAINER_GROUP_ID}" \
                     --build-arg WORKSPACE_ROOT_DIR="${WORKSPACE_ROOT_DIR}" \
-                    -t "${CONTAINER_IMAGE_NAME}${CONTAINER_IMAGE_TAG}" -f "${cwd}/Dockerfile" "${cwd}"
+                    -t "${CONTAINER_IMAGE_NAME}${CONTAINER_IMAGE_TAG}" \
+                    -f "${cwd}/Dockerfile" "${cwd}"
 
 # clean temporary images
-docker image prune -f --filter label="stage=github-sandbox-image" --filter "dangling=true"
+docker image prune -f --filter label="stage=github-sandbox-*" --filter "dangling=true"

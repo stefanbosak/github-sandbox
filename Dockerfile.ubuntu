@@ -2,10 +2,12 @@
 ARG CONTAINER_USER=runner
 ARG CONTAINER_GROUP=runner
 
+ARG CONTAINER_USER_ID=1000
+ARG CONTAINER_GROUP_ID=1000
+
 # set location of workspace directory
 # (temporary space within container image)
 ARG WORKSPACE_ROOT_DIR="/home/${CONTAINER_USER}"
-
 
 # Ubuntu release version
 ARG UBUNTU_RELEASE=24.04
@@ -29,12 +31,21 @@ ARG RUNNER_VERSION
 ARG CONTAINER_USER
 ARG CONTAINER_GROUP
 
+ARG CONTAINER_USER_ID
+ARG CONTAINER_GROUP_ID
+
 ARG WORKSPACE_ROOT_DIR
 WORKDIR "${WORKSPACE_ROOT_DIR}/actions-runner"
 
 # setup user profile
-RUN groupadd --gid 1001 ${CONTAINER_USER} && \
-    useradd --gid ${CONTAINER_GROUP} --groups sudo,${CONTAINER_USER} --create-home --uid 1001 ${CONTAINER_USER} -s /bin/bash && \
+RUN if ! getent passwd ${CONTAINER_USER_ID}; then \
+        groupadd --gid ${CONTAINER_GROUP_ID} ${CONTAINER_GROUP} && \
+        useradd --gid ${CONTAINER_GROUP_ID} --groups sudo,${CONTAINER_USER} --create-home --uid ${CONTAINER_USER_ID} ${CONTAINER_USER} -s /bin/bash; \
+    else \
+        groupmod -n ${CONTAINER_USER} ubuntu && \
+        usermod -l ${CONTAINER_USER} ubuntu && \
+        chown -R "${CONTAINER_USER}:${CONTAINER_GROUP}" "/home/${CONTAINER_USER}"; \
+    fi && \
 # update the base packages
     apt-get update -y && apt-get dist-upgrade -y && \
 # install packages
@@ -57,17 +68,17 @@ ADD "https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/acti
 COPY start.sh "/start.sh"
 
 # make the script executable
-RUN chown ${CONTAINER_USER}:${CONTAINER_GROUP} "/start.sh" && \
+RUN chown "${CONTAINER_USER}:${CONTAINER_GROUP}" "/start.sh" && \
     chmod +x "/start.sh" && \
 # Install dependencies
     cd "${WORKSPACE_ROOT_DIR}/actions-runner" && \
     tar -xvf "actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz" -C "." && \
-    ./bin/installdependencies.sh
+    ./bin/installdependencies.sh && \
+    chown -R "${CONTAINER_USER}:${CONTAINER_GROUP}" "/home/${CONTAINER_USER}"
 
 # since the config and run script for actions are not allowed to be run by root,
 # set the user to "runner" so all subsequent commands are run as the user
 USER "${CONTAINER_USER}:${CONTAINER_GROUP}"
 
 # set the entrypoint to the start.sh script
-#ENTRYPOINT ["sh", "-c", "${WORKSPACE_ROOT_DIR}/start.sh"]
 ENTRYPOINT ["/start.sh"]

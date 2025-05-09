@@ -27,6 +27,11 @@ if [ -z "${CONTAINER_REPOSITORY}" ]; then
   exit 1
 fi
 
+if [ -z "${CONTAINER_REPOSITORY}" ]; then
+  echo "Remote container registry repository has not be set in variable CONTAINER_REPOSITORY (see ${cwd}/setvariables.sh)"
+  exit 1
+fi
+
 # source image (local build)
 CONTAINER_SOURCE_IMAGE="${CONTAINER_IMAGE_NAME}${CONTAINER_IMAGE_TAG}"
 
