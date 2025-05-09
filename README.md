@@ -15,7 +15,7 @@
 - - docker compose down runner
 
  **Docker build runner:**
- - docker build to create runner-image:
+ - docker build to create runner image:
  ./runner_build.sh
 
  **Docker start runner instance:**

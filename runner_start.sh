@@ -31,4 +31,5 @@ docker container run --platform ${TARGETPLATFORM} -ti -v /dev:/dev \
                      --env RUNNER_GROUP_NAME="${RUNNER_GROUP_NAME}" \
                      --env RUNNER_LABELS="${RUNNER_LABELS}" \
                      --env WORKSPACE_ROOT_DIR="${WORKSPACE_ROOT_DIR}" \
-                     --network=host --detach --rm --name "${RUNNER_NAME}" "${CONTAINER_IMAGE_NAME}"
+                     --network=host --detach --rm --name "${RUNNER_NAME}" \
+                     "${CONTAINER_REPOSITORY}${CONTAINER_IMAGE_NAME}${CONTAINER_IMAGE_TAG}"

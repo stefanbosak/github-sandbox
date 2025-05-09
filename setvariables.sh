@@ -32,7 +32,14 @@ export RUNNER_GROUP_NAME=${RUNNER_GROUP_NAME:-"default"}
 export RUNNER_LABELS=${RUNNER_LABELS:-"self-hosted-default"}
 
 # container image name
-export CONTAINER_IMAGE_NAME=${CONTAINER_IMAGE_NAME:-"runner-image"}
+export CONTAINER_IMAGE_NAME=${CONTAINER_IMAGE_NAME:-"github-sandbox"}
+
+# it is crutial to have ":" in the beginning of the string
+export CONTAINER_IMAGE_TAG=${CONTAINER_IMAGE_TAG:-":initial"}
+
+# it is crutial to have "/" at the end of the string
+# - if empty use local containers
+export CONTAINER_REPOSITORY=${CONTAINER_REPOSITORY:-""}
 
 # default target OS, architecture and platforms
 export TARGETOS=${TARGETOS:-linux}

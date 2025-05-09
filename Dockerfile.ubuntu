@@ -15,7 +15,12 @@ ARG DEBIAN_FRONTEND=noninteractive
 ARG RUNNER_VERSION=2.323.0
 
 # base for image
-FROM ubuntu:${UBUNTU_RELEASE} AS runner-image
+FROM ubuntu:${UBUNTU_RELEASE} AS github-sandbox-image
+
+LABEL stage="github-sandbox-image" \
+      description="Ubuntu-based container GitHub sandbox self-hosted runner" \
+      org.opencontainers.image.description="Ubuntu-based container GitHub sandbox self-hosted runner" \
+      org.opencontainers.image.source=https://github.com/stefanbosak/github-sandbox
 
 ARG DEBIAN_FRONTEND
 
