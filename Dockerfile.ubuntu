@@ -40,10 +40,13 @@ WORKDIR "${WORKSPACE_ROOT_DIR}/actions-runner"
 # setup user profile
 RUN if ! getent passwd ${CONTAINER_USER_ID}; then \
         groupadd --gid ${CONTAINER_GROUP_ID} ${CONTAINER_GROUP} && \
-        useradd --gid ${CONTAINER_GROUP_ID} --groups sudo,${CONTAINER_USER} --create-home --uid ${CONTAINER_USER_ID} ${CONTAINER_USER} -s /bin/bash; \
+        useradd --gid ${CONTAINER_GROUP_ID} --groups "sudo,${CONTAINER_USER}" --create-home --uid ${CONTAINER_USER_ID} "${CONTAINER_USER}" -s "/bin/bash"; \
     else \
-        groupmod -n ${CONTAINER_USER} ubuntu && \
-        usermod -l ${CONTAINER_USER} ubuntu && \
+        rm -fr "/home/${CONTAINER_USER}" && \
+        mv "/home/ubuntu" "/home/${CONTAINER_USER}" && \
+        usermod -d "/home/${CONTAINER_USER}" -c "${CONTAINER_USER}" "ubuntu" && \
+        groupmod -n "${CONTAINER_USER}" "ubuntu" && \
+        usermod -l "${CONTAINER_USER}" "ubuntu" && \
         chown -R "${CONTAINER_USER}:${CONTAINER_GROUP}" "/home/${CONTAINER_USER}"; \
     fi && \
 # update the base packages
@@ -74,6 +77,7 @@ RUN chown "${CONTAINER_USER}:${CONTAINER_GROUP}" "/start.sh" && \
     cd "${WORKSPACE_ROOT_DIR}/actions-runner" && \
     tar -xvf "actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz" -C "." && \
     ./bin/installdependencies.sh && \
+    rm -f "actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz" && \
     chown -R "${CONTAINER_USER}:${CONTAINER_GROUP}" "/home/${CONTAINER_USER}"
 
 # since the config and run script for actions are not allowed to be run by root,

@@ -1,15 +1,27 @@
 #!/bin/bash
+#
+# Configuration of versions and other variables
+#
+# changed: 2025-May-10
+#
+# NOTEs:
+# - any execution and modification(s) is only in responsibility of user
+# - add container volume mapping(s) based on user preference
+# - modify/align to fit user needs/requirements at your own
+# - if needed use environment variables with same naming
+#   (following variables have default/pre-defined values
+#    and can be overrided by environment variables)
+#
+cwd=$(dirname $(realpath "${0}"))
 
-# define GitHub URIs
-export GITHUB_URI="https://github.com"
-export GITHUB_RAW_URI="https://raw.githubusercontent.com"
+# GitHub Actions workflow environment tail file
+export GITHUB_ENV_TAIL_FILE=${GITHUB_ENV_TAIL_FILE:-"/tmp/github_env_tail"}
 
-# GitHub runner project repository
-export RUNNER_PROJECT="actions/runner"
-export RUNNER_URI="${GITHUB_URI}/${RUNNER_PROJECT}";
+# automatically recognize and set latest available tools versions
+# (any tool version can be overrided via corresponding variable)
+source "${cwd}/set_latest_versions_strings.sh"
 
-# extract last GitHub runner version
-export RUNNER_VERSION=$(git ls-remote --refs --sort='version:refname' --tags "${RUNNER_URI}" | awk -F"/" '!($0 ~ /alpha|beta|rc|dev|nightly|\{/){print $NF}' | tail -n 1 | sed 's/^v//g')
+export RUNNER_VERSION=${RUNNER_VERSION:-2.323.0}
 
 # GitHub action runner organization and repository name
 export REPO=${REPO:-"<placeholder>"}
