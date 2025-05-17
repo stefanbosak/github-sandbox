@@ -1,0 +1,15 @@
+name: 'Example for Linux'
+
+on: workflow_dispatch
+
+jobs:
+  # running simple jobs on default GitHub hosted linux runners (x64, arm64)
+  test:
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        runner: [ubuntu-latest, ubuntu-24.04-arm]
+    steps:
+      - name: 'Run task'
+        shell: bash
+        run: echo "Running arch=$(uname -m) runner_name=${{ runner.name }} on hostname=$(hostname)."

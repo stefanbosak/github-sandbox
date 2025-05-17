@@ -1,0 +1,14 @@
+name: "Example of composite action use"
+
+on: workflow_dispatch
+
+jobs:
+  test:
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        runner: [ubuntu-latest, ubuntu-24.04-arm]
+    steps:
+      - uses: actions/checkout@main
+      -   id: action
+          uses: ./.github/actions/example-composite-action

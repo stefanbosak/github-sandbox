@@ -1,0 +1,88 @@
+# user in container
+ARG CONTAINER_USER=runner
+ARG CONTAINER_GROUP=runner
+
+ARG CONTAINER_USER_ID=1000
+ARG CONTAINER_GROUP_ID=1000
+
+# set location of workspace directory
+# (temporary space within container image)
+ARG WORKSPACE_ROOT_DIR="/home/${CONTAINER_USER}"
+
+# Debian release version
+ARG DEBIAN_RELEASE=stable-slim
+ARG DEBIAN_FRONTEND=noninteractive
+
+# set the GitHub runner version
+ARG RUNNER_CLI_VERSION=2.324.0
+
+# base for image
+FROM debian:${DEBIAN_RELEASE} AS github-sandbox-image
+
+LABEL stage="github-sandbox-image" \
+      description="Debian-based container GitHub sandbox self-hosted runner" \
+      org.opencontainers.image.description="Debian-based container GitHub sandbox self-hosted runner" \
+      org.opencontainers.image.source=https://github.com/stefanbosak/github-sandbox
+
+ARG DEBIAN_FRONTEND
+
+ARG RUNNER_CLI_VERSION
+
+ARG CONTAINER_USER
+ARG CONTAINER_GROUP
+
+ARG CONTAINER_USER_ID
+ARG CONTAINER_GROUP_ID
+
+ARG WORKSPACE_ROOT_DIR
+WORKDIR "${WORKSPACE_ROOT_DIR}/actions-runner"
+
+# setup user profile
+RUN if ! getent passwd ${CONTAINER_USER_ID}; then \
+        groupadd --gid ${CONTAINER_GROUP_ID} "${CONTAINER_GROUP}" && \
+        useradd --gid ${CONTAINER_GROUP_ID} --groups "sudo,${CONTAINER_USER}" --create-home --uid ${CONTAINER_USER_ID} "${CONTAINER_USER}" -s "/bin/bash"; \
+    else \
+        rm -fr "/home/${CONTAINER_USER}" && \
+        mv "/home/debian" "/home/${CONTAINER_USER}" && \
+        usermod -d "/home/${CONTAINER_USER}" -c "${CONTAINER_USER}" "debian" && \
+        groupmod -n "${CONTAINER_USER}" "debian" && \
+        usermod -l "${CONTAINER_USER}" "debian" && \
+        chown -R "${CONTAINER_USER}:${CONTAINER_GROUP}" "/home/${CONTAINER_USER}"; \
+    fi && \
+# update the base packages
+    apt-get update -y && apt-get dist-upgrade -y && \
+# install packages
+    apt-get install -y --no-install-recommends \
+    build-essential \
+    ca-certificates \
+    libicu72 libkrb5-3 zlib1g \
+    curl \
+    jq \
+    sudo \
+    unzip && \
+    apt-get clean &&  rm -rf /var/lib/apt/lists/* && \
+# Set up the runner user
+    echo "${CONTAINER_USER} ALL=(ALL) NOPASSWD:ALL" > "/etc/sudoers.d/${CONTAINER_USER}"
+
+# cd into the user directory, download and unpack the github actions runner
+ADD "https://github.com/actions/runner/releases/download/v${RUNNER_CLI_VERSION}/actions-runner-linux-x64-${RUNNER_CLI_VERSION}.tar.gz" "${WORKSPACE_ROOT_DIR}/actions-runner/"
+
+# copy over the start.sh script
+COPY start.sh "/start.sh"
+
+# make the script executable
+RUN chown "${CONTAINER_USER}:${CONTAINER_GROUP}" "/start.sh" && \
+    chmod +x "/start.sh" && \
+# Install dependencies
+    cd "${WORKSPACE_ROOT_DIR}/actions-runner" && \
+    tar -xvf "actions-runner-linux-x64-${RUNNER_CLI_VERSION}.tar.gz" -C "." && \
+    ./bin/installdependencies.sh && \
+    rm -f "actions-runner-linux-x64-${RUNNER_CLI_VERSION}.tar.gz" && \
+    chown -R "${CONTAINER_USER}:${CONTAINER_GROUP}" "/home/${CONTAINER_USER}"
+
+# since the config and run script for actions are not allowed to be run by root,
+# set the user to "runner" so all subsequent commands are run as the user
+USER "${CONTAINER_USER}:${CONTAINER_GROUP}"
+
+# set the entrypoint to the start.sh script
+ENTRYPOINT ["/start.sh"]

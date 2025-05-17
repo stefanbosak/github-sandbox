@@ -1,0 +1,13 @@
+name: 'Example of sequential'
+
+on: workflow_dispatch
+
+jobs:
+  # running simple job on one runner
+  sequencial-job:
+    # for single self-hosted means prefix and rest of are labels of given self-hosted runner (labels need to match)
+    runs-on: [ self-hosted, self-hosted-4 ]
+    steps:
+      - name: 'Run task'
+        shell: bash
+        run: echo "Running arch=$(uname -m) runner_name=${{ runner.name }} on hostname=$(hostname) !"
