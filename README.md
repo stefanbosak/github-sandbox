@@ -5,11 +5,10 @@ Aim of this repository is to offer support for GitHub self-hosted runners operat
 **setup**
 - edit setvariables.sh (modify variables correspondingly if neeed)
 - store GitHub classic personal access token in ~/GHToken.txt
-- access token is required for automatic obtaining registration/remove token for runner
-- currently only personal accounts are supported, organizations would be supported soon 
+- store GitHub fine-grained personal access token for organization in ~/GHTokenOrg.txt
 
 **Docker compose build, run and scale runners:**
-- ./runner_compose_start.sh --group _group_ --labels _labels_
+- ./runner_compose_start.sh --org _organization_ --repo _repository_ --group _group_ --labels _labels_ --amount _amount_
 
 **Docker compose stop runners:**
 - ./runners_compose_stop.sh
@@ -20,11 +19,9 @@ Aim of this repository is to offer support for GitHub self-hosted runners operat
 
 **Docker start runner instance:**
 - docker run to start runner (arguments are optional, possible to start any amount as needed):
-- ./runner_start.sh --group _group_ --labels _labels_ --amount _amount_
+- ./runner_start.sh --org _organization_ --repo _repository_ --group _group_ --labels _labels_
 
 **Docker stop all runners:**
-- docker container ls --filter "name=^runner-*" (get list of activated runners)
-- docker container stop ^runner-... (stop selected runner)
 - ./runners_stop.sh (stop all of previously started runners)
 
 **Docker push runner image:**
