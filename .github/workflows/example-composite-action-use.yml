@@ -1,0 +1,21 @@
+name: "Example of composite action use"
+
+on:
+  workflow_dispatch:
+    inputs:
+      os:
+        description: 'Runner label'
+        required: true
+        default: '["ubuntu-latest-x64","ubuntu-latest-arm64"]'
+        type: string
+
+jobs:
+  test:
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        runner: ${{ fromJson(inputs.os) }}
+    steps:
+      - uses: actions/checkout@main
+      -   id: action
+          uses: ./.github/actions/example-composite-action

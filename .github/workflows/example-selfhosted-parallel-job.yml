@@ -1,0 +1,35 @@
+name: 'Example of parallel'
+
+on:
+  workflow_dispatch:
+    inputs:
+      runner_group:
+        description: 'Runner group'
+        required: true
+        default: '["Default"]'
+        type: string
+      os:
+        description: 'Runner label'
+        required: true
+        default: '["self-hosted"]'
+        type: string
+
+jobs:
+  # running single job across multiple runners in the same time
+  parallel-job:
+    runs-on:
+      group: ${{ matrix.runner_group }}
+      labels: ${{ matrix.os }}
+    strategy:
+      matrix:
+        runner_group: ${{ fromJson(inputs.runner_group) }}
+        os: ${{ fromJson(inputs.os) }}
+        instance: [1,2,3,4,5,6,7,8,9,10,11,12]
+      max-parallel: 25
+    #concurrency:
+      #group: parallel-group-${{ matrix.runner_group }}-${{ matrix.os }}
+      #group: parallel-group-${{ github.ref }}
+      #cancel-in-progress: false
+    steps:
+      - name: 'Run task'
+        run: echo "Running arch=$(uname -m) matrix_runner=${{ matrix.runner }} runner_name=${{ runner.name }} on hostname=$(hostname)"
