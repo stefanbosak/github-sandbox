@@ -16,6 +16,20 @@ ARG DEBIAN_FRONTEND=noninteractive
 # set the GitHub runner version
 ARG RUNNER_CLI_VERSION=2.324.0
 
+FROM alpine:latest AS github-sandbox-builder
+
+ARG RUNNER_CLI_VERSION
+
+ARG WORKSPACE_ROOT_DIR
+WORKDIR "${WORKSPACE_ROOT_DIR}/actions-runner"
+
+# cd into the user directory, download and unpack the github actions runner
+ADD "https://github.com/actions/runner/releases/download/v${RUNNER_CLI_VERSION}/actions-runner-linux-x64-${RUNNER_CLI_VERSION}.tar.gz" "${WORKSPACE_ROOT_DIR}/actions-runner/"
+
+RUN cd "${WORKSPACE_ROOT_DIR}/actions-runner" && \
+    tar -xvf "actions-runner-linux-x64-${RUNNER_CLI_VERSION}.tar.gz" -C "." && \
+    rm -f "actions-runner-linux-x64-${RUNNER_CLI_VERSION}.tar.gz"
+
 # base for image
 FROM ubuntu:${UBUNTU_RELEASE} AS github-sandbox-image
 
@@ -26,7 +40,6 @@ LABEL stage="github-sandbox-image" \
 
 ARG DEBIAN_FRONTEND
 
-ARG RUNNER_CLI_VERSION
 
 ARG CONTAINER_USER
 ARG CONTAINER_GROUP
@@ -35,7 +48,7 @@ ARG CONTAINER_USER_ID
 ARG CONTAINER_GROUP_ID
 
 ARG WORKSPACE_ROOT_DIR
-WORKDIR "${WORKSPACE_ROOT_DIR}/actions-runner"
+WORKDIR "${WORKSPACE_ROOT_DIR}"
 
 # setup user profile
 RUN if ! getent passwd ${CONTAINER_USER_ID}; then \
@@ -64,20 +77,18 @@ RUN if ! getent passwd ${CONTAINER_USER_ID}; then \
 # Set up the runner user
     echo "${CONTAINER_USER} ALL=(ALL) NOPASSWD:ALL" > "/etc/sudoers.d/${CONTAINER_USER}"
 
-# cd into the user directory, download and unpack the github actions runner
-ADD "https://github.com/actions/runner/releases/download/v${RUNNER_CLI_VERSION}/actions-runner-linux-x64-${RUNNER_CLI_VERSION}.tar.gz" "${WORKSPACE_ROOT_DIR}/actions-runner/"
-
 # copy over the start.sh script
 COPY start.sh "/start.sh"
+
+# copy data from builder
+COPY --from=github-sandbox-builder "${WORKSPACE_ROOT_DIR}/actions-runner" "${WORKSPACE_ROOT_DIR}/actions-runner"
 
 # make the script executable
 RUN chown "${CONTAINER_USER}:${CONTAINER_GROUP}" "/start.sh" && \
     chmod +x "/start.sh" && \
 # Install dependencies
     cd "${WORKSPACE_ROOT_DIR}/actions-runner" && \
-    tar -xvf "actions-runner-linux-x64-${RUNNER_CLI_VERSION}.tar.gz" -C "." && \
     ./bin/installdependencies.sh && \
-    rm -f "actions-runner-linux-x64-${RUNNER_CLI_VERSION}.tar.gz" && \
     chown -R "${CONTAINER_USER}:${CONTAINER_GROUP}" "/home/${CONTAINER_USER}"
 
 # since the config and run script for actions are not allowed to be run by root,

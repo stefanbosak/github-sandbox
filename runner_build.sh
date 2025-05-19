@@ -40,4 +40,4 @@ docker buildx build --network=host --force-rm --rm \
                     -f "${cwd}/Dockerfile" "${cwd}"
 
 # clean temporary images
-docker image prune -f --filter label="stage=${CONTAINER_IMANGE_NAME}-*" --filter "dangling=true"
+docker image prune -f --filter label="stage=${CONTAINER_IMAGE_NAME}-*" --filter "dangling=true"
