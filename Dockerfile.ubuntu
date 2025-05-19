@@ -34,8 +34,8 @@ RUN cd "${WORKSPACE_ROOT_DIR}/actions-runner" && \
 FROM ubuntu:${UBUNTU_RELEASE} AS github-sandbox-image
 
 LABEL stage="github-sandbox-image" \
-      description="Ubuntu-based container GitHub sandbox self-hosted runner" \
-      org.opencontainers.image.description="Ubuntu-based container GitHub sandbox self-hosted runner" \
+      description="Ubuntu-based container GitHub tools self-hosted runner" \
+      org.opencontainers.image.description="Ubuntu-based container GitHub tools self-hosted runner" \
       org.opencontainers.image.source=https://github.com/stefanbosak/github-sandbox
 
 ARG DEBIAN_FRONTEND
