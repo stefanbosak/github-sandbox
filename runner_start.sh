@@ -45,7 +45,9 @@ if [ "${RUNNER_SCOPE_PREFIX}" == "orgs" ]; then
 fi
 
 # start unique standalone GitHub runner Docker container (optionally with labels, group name)
+# - privileged mode is required for DinD (Docker in Docker)
 docker container run --platform "${TARGETPLATFORM}" -ti -v /dev:/dev \
+                     --privileged \
                      --env GH_TOKEN="${GH_TOKEN}" \
                      --env GH_API_VERSION="${GH_API_VERSION}" \
                      --env GH_API_URI_PREFIX="${GH_API_URI_PREFIX}" \

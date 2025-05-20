@@ -69,10 +69,9 @@ RUN if ! getent passwd ${CONTAINER_USER_ID}; then \
     build-essential \
     ca-certificates \
     libicu72 libkrb5-3 zlib1g \
-    curl \
-    jq \
-    sudo \
-    unzip && \
+    curl jq \
+    sudo iputils-ping iproute2 \
+    unzip bash-completion && \
     apt-get clean &&  rm -rf /var/lib/apt/lists/* && \
 # Set up the runner user
     echo "${CONTAINER_USER} ALL=(ALL) NOPASSWD:ALL" > "/etc/sudoers.d/${CONTAINER_USER}"
@@ -89,7 +88,9 @@ RUN chown "${CONTAINER_USER}:${CONTAINER_GROUP}" "/start.sh" && \
 # Install dependencies
     cd "${WORKSPACE_ROOT_DIR}/actions-runner" && \
     ./bin/installdependencies.sh && \
-    chown -R "${CONTAINER_USER}:${CONTAINER_GROUP}" "/home/${CONTAINER_USER}"
+    chown -R "${CONTAINER_USER}:${CONTAINER_GROUP}" "/home/${CONTAINER_USER}" && \
+    curl -fsSL https://get.docker.com | sh && \
+    usermod -aG docker "${CONTAINER_USER}"
 
 # since the config and run script for actions are not allowed to be run by root,
 # set the user to "runner" so all subsequent commands are run as the user

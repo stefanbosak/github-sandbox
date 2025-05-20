@@ -35,5 +35,9 @@ export RUNNER_TOKEN=$(curl -s -L -H "Accept: application/vnd.github+json" \
 # perform GitHub runner registration and activation
 ./config.sh --url "https://github.com/${RUNNER_SCOPE}" --unattended --token "${RUNNER_TOKEN}" --name "${RUNNER_NAME}" --runnergroup "${RUNNER_GROUP_NAME}" --labels "${RUNNER_LABELS}"
 
+# start Docker service
+# - following approach is not working: sudo systemctl restart docker.service
+sudo /etc/init.d/docker restart
+
 # start GitHub runner
 ./run.sh & wait ${!}

@@ -14,6 +14,7 @@ services:
         CONTAINER_USER_ID: "${CONTAINER_USER_ID}"
         CONTAINER_GROUP_ID: "${CONTAINER_GROUP_ID}"
         WORKSPACE_ROOT_DIR: "${WORKSPACE_ROOT_DIR}"
+    privileged: true
     restart: always
     environment:
       - GH_TOKEN
@@ -25,6 +26,8 @@ services:
       - RUNNER_LABELS
       - WORKSPACE_ROOT_DIR
     image: "${CONTAINER_REPOSITORY}${CONTAINER_IMAGE_NAME}${CONTAINER_IMAGE_TAG}"
+    volumes:
+      - /dev:/dev
     network_mode: "host"
     deploy:
       mode: replicated
