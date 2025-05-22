@@ -48,5 +48,15 @@ if [ "${RUNNER_SCOPE_PREFIX}" == "orgs" ]; then
   fi
 fi
 
-# start containers
-docker compose -p "compose-${RUNNER_NAME_PREFIX}" up -d --scale runner=${RUNNER_AMOUNT}
+runner_name_ext="${RUNNER_NAME}"
+IFS=',' read -ra PLATFORMS <<< "${TARGETPLATFORM}"
+
+for platform in "${PLATFORMS[@]}"; do
+  arch="${platform#linux/}"  # remove "linux/" prefix
+  arch="${arch%%/*}"         # extract only the architecture part
+
+  # start containers
+  export RUNNER_NAME="c-${arch}-${runner_name_ext}"
+  export COMPOSE_FILE="${cwd}/docker-compose-${arch}.yml"
+  docker compose -p "${RUNNER_NAME}" up -d --scale runner=${RUNNER_AMOUNT}
+done

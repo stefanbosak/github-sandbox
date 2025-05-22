@@ -25,9 +25,21 @@ for tool in ${TOOLS}; do
   fi
 done
 
-if [ ! -z "$(docker compose ls --filter "name=^compose-${RUNNER_NAME_PREFIX}*" -q)" ]; then
-  docker compose -p "compose-${RUNNER_NAME_PREFIX}" down runner
-fi
+IFS=',' read -ra PLATFORMS <<< "${TARGETPLATFORM}"
+
+for platform in "${PLATFORMS[@]}"; do
+  arch="${platform#linux/}"  # remove "linux/" prefix
+  arch="${arch%%/*}"         # extract only the architecture part
+
+  # create runner name
+  runner_name="c-${arch}-${RUNNER_NAME_PREFIX}"
+
+  # stop all standalone Docker containers
+  if [ ! -z "$(docker container ls --filter "name=^${runner_name}*" -q)" ]; then
+    docker container stop --timeout 360 $(docker container ls --filter "name=^${runner_name}*" -q)
+    docker container rm -f $(docker container ls --filter "name=^${runner_name}*" -qa)
+  fi
+done
 
 # runner groups are only in organizations
 if [ "${RUNNER_SCOPE_PREFIX}" == "orgs" ]; then

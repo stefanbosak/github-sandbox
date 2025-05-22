@@ -14,6 +14,7 @@ services:
         CONTAINER_USER_ID: "${CONTAINER_USER_ID}"
         CONTAINER_GROUP_ID: "${CONTAINER_GROUP_ID}"
         WORKSPACE_ROOT_DIR: "${WORKSPACE_ROOT_DIR}"
+    platform: "linux/amd64"
     privileged: true
     restart: always
     environment:
@@ -22,10 +23,11 @@ services:
       - GH_API_URI_PREFIX
       - RUNNER_SCOPE_PREFIX
       - RUNNER_SCOPE
+      - RUNNER_NAME
       - RUNNER_GROUP_NAME
       - RUNNER_LABELS
       - WORKSPACE_ROOT_DIR
-    image: "${CONTAINER_REPOSITORY}${CONTAINER_IMAGE_NAME}${CONTAINER_IMAGE_TAG}"
+    image: "${CONTAINER_REPOSITORY}${CONTAINER_IMAGE_NAME}-amd64${CONTAINER_IMAGE_TAG}"
     volumes:
       - /dev:/dev
     network_mode: "host"

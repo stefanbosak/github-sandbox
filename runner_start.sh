@@ -44,18 +44,29 @@ if [ "${RUNNER_SCOPE_PREFIX}" == "orgs" ]; then
   fi
 fi
 
-# start unique standalone GitHub runner Docker container (optionally with labels, group name)
-# - privileged mode is required for DinD (Docker in Docker)
-docker container run --platform "${TARGETPLATFORM}" -ti -v /dev:/dev \
-                     --privileged \
-                     --env GH_TOKEN="${GH_TOKEN}" \
-                     --env GH_API_VERSION="${GH_API_VERSION}" \
-                     --env GH_API_URI_PREFIX="${GH_API_URI_PREFIX}" \
-                     --env RUNNER_SCOPE_PREFIX="${RUNNER_SCOPE_PREFIX}" \
-                     --env RUNNER_SCOPE="${RUNNER_SCOPE}" \
-                     --env RUNNER_NAME="${RUNNER_NAME}" \
-                     --env RUNNER_GROUP_NAME="${RUNNER_GROUP_NAME}" \
-                     --env RUNNER_LABELS="${RUNNER_LABELS}" \
-                     --env WORKSPACE_ROOT_DIR="${WORKSPACE_ROOT_DIR}" \
-                     --network=host --detach --rm --name "${RUNNER_NAME}" \
-                     "${CONTAINER_REPOSITORY}${CONTAINER_IMAGE_NAME}${CONTAINER_IMAGE_TAG}"
+IFS=',' read -ra PLATFORMS <<< "${TARGETPLATFORM}"
+
+for platform in "${PLATFORMS[@]}"; do
+  arch="${platform#linux/}"  # remove "linux/" prefix
+  arch="${arch%%/*}"         # extract only the architecture part
+
+  # create runner name
+  runner_name="${arch}-${RUNNER_NAME}"
+
+  # start unique standalone GitHub runner Docker container (optionally with labels, group name)
+  # - privileged mode is required for DinD (Docker in Docker)
+  docker container run --platform "${platform}" -ti -v /dev:/dev \
+                       --privileged \
+                       --env GH_TOKEN="${GH_TOKEN}" \
+                       --env GH_API_VERSION="${GH_API_VERSION}" \
+                       --env GH_API_URI_PREFIX="${GH_API_URI_PREFIX}" \
+                       --env RUNNER_SCOPE_PREFIX="${RUNNER_SCOPE_PREFIX}" \
+                       --env RUNNER_SCOPE="${RUNNER_SCOPE}" \
+                       --env RUNNER_NAME="${runner_name}" \
+                       --env RUNNER_GROUP_NAME="${RUNNER_GROUP_NAME}" \
+                       --env RUNNER_LABELS="${RUNNER_LABELS}" \
+                       --env WORKSPACE_ROOT_DIR="${WORKSPACE_ROOT_DIR}" \
+                       --network=host --detach --rm --name "${runner_name}" \
+                       "${CONTAINER_REPOSITORY}${CONTAINER_IMAGE_NAME}${CONTAINER_IMAGE_TAG}"
+done
+

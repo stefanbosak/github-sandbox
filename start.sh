@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # GitHub runner name
-RUNNER_NAME=${RUNNER_NAME:-"runner-${RUNNER_SCOPE_PREFIX}-$(cat /proc/sys/kernel/random/uuid)"}
+RUNNER_NAME=${RUNNER_NAME:-"runner-${RUNNER_SCOPE_PREFIX}-$(cat /proc/sys/kernel/random/uuid | head -c 23)"}
 
 # GitHub runner group name
 RUNNER_GROUP_NAME=${RUNNER_GROUP_NAME:-"default"}

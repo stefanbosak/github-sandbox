@@ -19,22 +19,26 @@ ARG RUNNER_CLI_VERSION=2.324.0
 # builder
 FROM alpine:latest AS github-sandbox-builder
 
+ARG TARGETOS
+ARG TARGETARCH
+
 ARG RUNNER_CLI_VERSION
 
 ARG WORKSPACE_ROOT_DIR
 WORKDIR "${WORKSPACE_ROOT_DIR}/actions-runner"
 
-# cd into the user directory, download and unpack the github actions runner
-ADD "https://github.com/actions/runner/releases/download/v${RUNNER_CLI_VERSION}/actions-runner-linux-x64-${RUNNER_CLI_VERSION}.tar.gz" "${WORKSPACE_ROOT_DIR}/actions-runner/"
-
-RUN cd "${WORKSPACE_ROOT_DIR}/actions-runner" && \
-    tar -xvf "actions-runner-linux-x64-${RUNNER_CLI_VERSION}.tar.gz" -C "." && \
-    rm -f "actions-runner-linux-x64-${RUNNER_CLI_VERSION}.tar.gz"
+# download and unpack the github actions runner
+RUN apk --no-cache add curl && uri=$(echo "https://github.com/actions/runner/releases/download/v${RUNNER_CLI_VERSION}/actions-runner-${TARGETOS}-${TARGETARCH}-${RUNNER_CLI_VERSION}.tar.gz" | \
+    sed -e 's/amd64/x64/g') && curl -sSL "${uri}" -o "${WORKSPACE_ROOT_DIR}/actions-runner/actions-runner.tar.gz" && \
+    cd "${WORKSPACE_ROOT_DIR}/actions-runner" && \
+    tar -xvf "actions-runner.tar.gz" -C "." && \
+    rm -f "actions-runner-linux.tar.gz"
 
 # base for image
 FROM debian:${DEBIAN_RELEASE} AS github-sandbox-image
 
 LABEL stage="github-sandbox-image" \
+      label="github-sandbox-image" \
       description="Debian-based container GitHub tools self-hosted runner" \
       org.opencontainers.image.description="Debian-based container GitHub tools self-hosted runner" \
       org.opencontainers.image.source=https://github.com/stefanbosak/github-sandbox

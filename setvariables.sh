@@ -74,7 +74,7 @@ export RUNNER_CLI_VERSION=${RUNNER_CLI_VERSION:-2.324.0}
 
 # GitHub action runner name
 export RUNNER_NAME_PREFIX="runner-${RUNNER_SCOPE_PREFIX}-${REPOSITORY}-"
-export RUNNER_NAME="${RUNNER_NAME_PREFIX}$(cat /proc/sys/kernel/random/uuid)"
+export RUNNER_NAME="${RUNNER_NAME_PREFIX}$(cat /proc/sys/kernel/random/uuid | head -c 23)"
 
 # GitHub action runner group name
 export RUNNER_GROUP_NAME=${RUNNER_GROUP_NAME:-"default"}
@@ -94,6 +94,17 @@ export UBUNTU_RELEASE=$(curl -s "${UBUNTU_RELEASES_URI}" | awk '/^Version:/ {if 
 # default target OS, architecture and platforms
 export TARGETOS=${TARGETOS:-linux}
 export TARGETARCH=${TARGETARCH:-$(dpkg --print-architecture)}
+
+if [ ! -z "$(dpkg-query -W qemu-user-static 2> /dev/null)" ]; then
+  if [ "${TARGETARCH}" = "amd64" ]; then
+    TARGETARCH="${TARGETARCH},${TARGETOS}/arm64/v8"
+  fi
+
+  if [ "${TARGETARCH}" = "arch64" ]; then
+    TARGETARCH="${TARGETARCH},${TARGETOS}/amd64"
+  fi
+fi
+
 export TARGETPLATFORM=${TARGETPLATFORM:-"${TARGETOS}/${TARGETARCH}"}
 
 # container user and group

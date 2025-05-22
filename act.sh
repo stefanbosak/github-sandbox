@@ -22,11 +22,24 @@ for tool in ${TOOLS}; do
 done
 
 # perform job in dry-run mode
-time act workflow_dispatch -W "${cwd}/.github/workflows/example-composite-action-use.yml" -s GH_TOKEN=$(cat ~/GHToken.txt) -j test -a "${USER}" --container-options "-v /dev/:/dev" --container-architecture "${TARGETPLATFORM}" -n
-#time act workflow_dispatch -W "${cwd}/.github/workflows/example-dependency.yml" -s GH_TOKEN=$(cat ~/GHToken.txt) -j test -a "${USER}" --container-options "-v /dev/:/dev" --container-architecture "${TARGETPLATFORM}" -n
-time act workflow_dispatch -W "${cwd}/.github/workflows/example-linux-x64-arm64.yml" -s GH_TOKEN=$(cat ~/GHToken.txt) -j test -a "${USER}" --container-options "-v /dev/:/dev" --container-architecture "${TARGETPLATFORM}"  -n
-time act workflow_dispatch -W "${cwd}/.github/workflows/example-macos-x64-arm64.yml" -s GH_TOKEN=$(cat ~/GHToken.txt) -j test -a "${USER}" --container-options "-v /dev/:/dev" --container-architecture "${TARGETPLATFORM}" -n
-time act workflow_dispatch -W "${cwd}/.github/workflows/example-reusable-workflow-call.yml" -s GH_TOKEN=$(cat ~/GHToken.txt) -j test -a "${USER}" --container-options "-v /dev/:/dev" --container-architecture "${TARGETPLATFORM}" -n
-#time act workflow_dispatch -W "${cwd}/.github/workflows/example-selfhosted-parallel-job.yml" -s GH_TOKEN=$(cat ~/GHToken.txt) -j test -a "${USER}" --container-options "-v /dev/:/dev" --container-architecture "${TARGETPLATFORM}" -n
-#time act workflow_dispatch -W "${cwd}/.github/workflows/example-selfhosted-sequential-job.yml" -s GH_TOKEN=$(cat ~/GHToken.txt) -j test -a "${USER}" --container-options "-v /dev/:/dev" --container-architecture "${TARGETPLATFORM}" -n
-#time act workflow_dispatch -W "${cwd}/.github/workflows/example-windows-x64-arm64.yml" -s GH_TOKEN=$(cat ~/GHToken.txt) -j test -a "${USER}" --container-options "-v /dev/:/dev" --container-architecture "${TARGETPLATFORM}"  -n
+#time act workflow_dispatch -W "${cwd}/.github/workflows/example-composite-action-use.yml" -s GH_TOKEN=$(cat ~/GHToken.txt) -j test -a "${USER}" --container-options "-v /dev/:/dev" --container-architecture "linux/amd64" --pull=true -P ubuntu-latest=amd64/ubuntu:latest
+#time act workflow_dispatch -W "${cwd}/.github/workflows/example-composite-action-use.yml" -s GH_TOKEN=$(cat ~/GHToken.txt) -j test -a "${USER}" --container-options "-v /dev/:/dev" --container-architecture "linux/arm64/v8" --pull=true -P ubuntu-24.04-arm=arm64v8/ubuntu:latest
+
+#time act workflow_dispatch -W "${cwd}/.github/workflows/example-dependency.yml" -s GH_TOKEN=$(cat ~/GHToken.txt) -j test -a "${USER}" --container-options "-v /dev/:/dev" --container-architecture "linux/amd64" --pull=true -P ubuntu-latest=amd64/ubuntu:latest
+#time act workflow_dispatch -W "${cwd}/.github/workflows/example-dependency.yml" -s GH_TOKEN=$(cat ~/GHToken.txt) -j test -a "${USER}" --container-options "-v /dev/:/dev" --container-architecture "linux/arm64/v8" --pull=true -P ubuntu-24.04-arm=arm64v8/ubuntu:latest
+
+time act workflow_dispatch -W "${cwd}/.github/workflows/example-linux-x64-arm64.yml" -s GH_TOKEN=$(cat ~/GHToken.txt) -j test -a "${USER}" --container-options "-v /dev/:/dev" --container-architecture "linux/amd64" --pull=true -P ubuntu-latest=amd64/ubuntu:latest
+time act workflow_dispatch -W "${cwd}/.github/workflows/example-linux-x64-arm64.yml" -s GH_TOKEN=$(cat ~/GHToken.txt) -j test -a "${USER}" --container-options "-v /dev/:/dev" --container-architecture "linux/arm64/v8" --pull=true -P ubuntu-24.04-arm=arm64v8/ubuntu:latest
+
+#time act workflow_dispatch -W "${cwd}/.github/workflows/example-reusable-workflow-call.yml" -s GH_TOKEN=$(cat ~/GHToken.txt) -j test -a "${USER}" --container-options "-v /dev/:/dev" --container-architecture "linux/amd64" --pull=true -P ubuntu-latest=amd64/ubuntu:latest
+#time act workflow_dispatch -W "${cwd}/.github/workflows/example-reusable-workflow-call.yml" -s GH_TOKEN=$(cat ~/GHToken.txt) -j test -a "${USER}" --container-options "-v /dev/:/dev" --container-architecture "linux/arm64/v8" --pull=true -P ubuntu-24.04-arm=arm64v8/ubuntu:latest
+
+#time act workflow_dispatch -W "${cwd}/.github/workflows/example-selfhosted-parallel-job.yml" -s GH_TOKEN=$(cat ~/GHToken.txt) -j test -a "${USER}" --container-options "-v /dev/:/dev" --container-architecture "linux/amd64" --pull=true -P ubuntu-latest=amd64/ubuntu:latest -n
+#time act workflow_dispatch -W "${cwd}/.github/workflows/example-selfhosted-parallel-job.yml" -s GH_TOKEN=$(cat ~/GHToken.txt) -j test -a "${USER}" --container-options "-v /dev/:/dev" --container-architecture "linux/arm64/v8" --pull=true -P ubuntu-24.04-arm=arm64v8/ubuntu:latest -n
+
+#time act workflow_dispatch -W "${cwd}/.github/workflows/example-selfhosted-sequential-job.yml" -s GH_TOKEN=$(cat ~/GHToken.txt) -j test -a "${USER}" --container-options "-v /dev/:/dev" --container-architecture "linux/amd64" --pull=true -P ubuntu-latest=amd64/ubuntu:latest -n
+#time act workflow_dispatch -W "${cwd}/.github/workflows/example-selfhosted-sequential-job.yml" -s GH_TOKEN=$(cat ~/GHToken.txt) -j test -a "${USER}" --container-options "-v /dev/:/dev" --container-architecture "linux/arm64/v8" --pull=true -P ubuntu-24.04-arm=arm64v8/ubuntu:latest -n
+
+#time act workflow_dispatch -W "${cwd}/.github/workflows/example-macos-x64-arm64.yml" -s GH_TOKEN=$(cat ~/GHToken.txt) -j test -a "${USER}" --container-options "-v /dev/:/dev" -n
+
+#time act workflow_dispatch -W "${cwd}/.github/workflows/example-windows-x64-arm64.yml" -s GH_TOKEN=$(cat ~/GHToken.txt) -j test -a "${USER}" --container-options "-v /dev/:/dev" -n

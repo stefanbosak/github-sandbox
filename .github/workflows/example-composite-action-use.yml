@@ -6,7 +6,7 @@ on:
       os:
         description: 'Runner label'
         required: true
-        default: '["ubuntu-latest-x64","ubuntu-latest-arm64"]'
+        default: '["ubuntu-latest","ubuntu-24.04-arm"]'
         type: string
 
 jobs:
