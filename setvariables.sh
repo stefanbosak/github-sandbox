@@ -80,7 +80,7 @@ export RUNNER_NAME=${RUNNER_NAME:-"${RUNNER_NAME_PREFIX}$(cat /proc/sys/kernel/r
 export RUNNER_GROUP_NAME=${RUNNER_GROUP_NAME:-"default"}
 
 # GitHub action runner labels
-export RUNNER_LABELS=${RUNNER_LABELS:-"self-hosted-${RUNNER_GROUP_NAME}"}
+export RUNNER_LABELS=${RUNNER_LABELS:-"$(hostname -s),$(date +"%s"),${RUNNER_GROUP_NAME}"}
 
 # Ubuntu releases URI
 export UBUNTU_RELEASES_URI="https://changelogs.ubuntu.com/meta-release"

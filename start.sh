@@ -7,7 +7,7 @@ RUNNER_NAME="${RUNNER_NAME}_$(cat /proc/sys/kernel/random/uuid | head -c 8)"
 RUNNER_GROUP_NAME=${RUNNER_GROUP_NAME:-"default"}
 
 # GitHub runner labels
-RUNNER_LABELS=${RUNNER_LABELS:-"self-hosted-${RUNNER_GROUP_NAME}"}
+RUNNER_LABELS=${RUNNER_LABELS:-"$(hostname -s),$(date +"%s"),${RUNNER_GROUP_NAME}"}
 
 cd "${WORKSPACE_ROOT_DIR}/actions-runner" || exit
 
