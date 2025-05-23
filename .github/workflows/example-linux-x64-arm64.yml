@@ -25,4 +25,4 @@ jobs:
         run: echo "Running arch=$(uname -m) runner_name=${{ runner.name }} on hostname=$(hostname)."
       - name: 'Run docker'
         shell: bash
-        run: docker run --rm alpine/curl -fsSL https://ifconfig.me
+        run: newgrp docker; docker run --rm alpine/curl -fsSL https://ifconfig.me
