@@ -37,7 +37,7 @@ for platform in "${PLATFORMS[@]}"; do
   # stop all standalone Docker containers
   if [ ! -z "$(docker container ls --filter "name=^${runner_name}*" -q)" ]; then
     docker container stop --timeout 30 $(docker container ls --filter "name=^${runner_name}*" -q)
-    docker container rm -f $(docker container ls --filter "name=^${runner_name}*" -qa)
+    #docker container rm -f $(docker container ls --filter "name=^${runner_name}*" -qa)
   fi
 done
 
