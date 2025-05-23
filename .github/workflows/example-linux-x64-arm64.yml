@@ -27,8 +27,5 @@ jobs:
       - name: 'Run docker'
         shell: bash
         run: |
-          whoami
-          sudo usermod -aG docker $(whoami)
-          newgrp docker
           id
           docker run --rm alpine/curl -fsSL https://ifconfig.me
