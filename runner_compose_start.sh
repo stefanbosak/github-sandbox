@@ -54,6 +54,7 @@ IFS=',' read -ra PLATFORMS <<< "${TARGETPLATFORM}"
 for platform in "${PLATFORMS[@]}"; do
   arch="${platform#linux/}"  # remove "linux/" prefix
   arch="${arch%%/*}"         # extract only the architecture part
+  arch="${arch/64/}"         # remove 64
 
   # start containers
   export RUNNER_NAME="c-${arch}-${runner_name_ext}"

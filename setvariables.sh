@@ -73,8 +73,8 @@ fi
 export RUNNER_CLI_VERSION=${RUNNER_CLI_VERSION:-2.324.0}
 
 # GitHub action runner name
-export RUNNER_NAME_PREFIX="runner-${RUNNER_SCOPE_PREFIX}-${REPOSITORY}-"
-export RUNNER_NAME="${RUNNER_NAME_PREFIX}$(cat /proc/sys/kernel/random/uuid | head -c 23)"
+export RUNNER_NAME_PREFIX="r-${RUNNER_SCOPE_PREFIX}-${REPOSITORY}-"
+export RUNNER_NAME=${RUNNER_NAME:-"${RUNNER_NAME_PREFIX}$(cat /proc/sys/kernel/random/uuid | head -c 13)"}
 
 # GitHub action runner group name
 export RUNNER_GROUP_NAME=${RUNNER_GROUP_NAME:-"default"}

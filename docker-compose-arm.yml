@@ -28,6 +28,7 @@ services:
       - RUNNER_LABELS
       - WORKSPACE_ROOT_DIR
     image: "${CONTAINER_REPOSITORY}${CONTAINER_IMAGE_NAME}-arm64${CONTAINER_IMAGE_TAG}"
+    stop_grace_period: 360s
     volumes:
       - /dev:/dev
     network_mode: "host"

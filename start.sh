@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # GitHub runner name
-RUNNER_NAME=${RUNNER_NAME:-"runner-${RUNNER_SCOPE_PREFIX}-$(cat /proc/sys/kernel/random/uuid | head -c 23)"}
+RUNNER_NAME="${RUNNER_NAME}_$(cat /proc/sys/kernel/random/uuid | head -c 8)"
 
 # GitHub runner group name
 RUNNER_GROUP_NAME=${RUNNER_GROUP_NAME:-"default"}
@@ -34,10 +34,6 @@ export RUNNER_TOKEN=$(curl -s -L -H "Accept: application/vnd.github+json" \
 
 # perform GitHub runner registration and activation
 ./config.sh --url "https://github.com/${RUNNER_SCOPE}" --unattended --token "${RUNNER_TOKEN}" --name "${RUNNER_NAME}" --runnergroup "${RUNNER_GROUP_NAME}" --labels "${RUNNER_LABELS}"
-
-# start Docker service
-# - following approach is not working: sudo systemctl restart docker.service
-sudo /etc/init.d/docker restart
 
 # start GitHub runner
 ./run.sh & wait ${!}

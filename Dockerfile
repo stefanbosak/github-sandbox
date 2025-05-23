@@ -19,6 +19,8 @@ ARG RUNNER_CLI_VERSION=2.324.0
 # builder
 FROM alpine:latest AS github-sandbox-builder
 
+LABEL stage="github-sandbox-builder"
+
 ARG TARGETOS
 ARG TARGETARCH
 
@@ -38,7 +40,6 @@ RUN apk --no-cache add curl && uri=$(echo "https://github.com/actions/runner/rel
 FROM debian:${DEBIAN_RELEASE} AS github-sandbox-image
 
 LABEL stage="github-sandbox-image" \
-      label="github-sandbox-image" \
       description="Debian-based container GitHub tools self-hosted runner" \
       org.opencontainers.image.description="Debian-based container GitHub tools self-hosted runner" \
       org.opencontainers.image.source=https://github.com/stefanbosak/github-sandbox

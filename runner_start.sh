@@ -49,9 +49,10 @@ IFS=',' read -ra PLATFORMS <<< "${TARGETPLATFORM}"
 for platform in "${PLATFORMS[@]}"; do
   arch="${platform#linux/}"  # remove "linux/" prefix
   arch="${arch%%/*}"         # extract only the architecture part
+  arch="${arch/64/}"         # remove 64
 
   # create runner name
-  runner_name="${arch}-${RUNNER_NAME}"
+  runner_name="s-${arch}-${RUNNER_NAME}"
 
   # start unique standalone GitHub runner Docker container (optionally with labels, group name)
   # - privileged mode is required for DinD (Docker in Docker)
