@@ -33,7 +33,9 @@ export RUNNER_TOKEN=$(curl -s -L -H "Accept: application/vnd.github+json" \
                                  -X POST "${GH_API_URI_PREFIX}${RUNNER_SCOPE_PREFIX}/${RUNNER_SCOPE}/actions/runners/registration-token" | jq -r '.token')
 
 # perform GitHub runner registration and activation
-./config.sh --url "https://github.com/${RUNNER_SCOPE}" --unattended --token "${RUNNER_TOKEN}" --name "${RUNNER_NAME}" --runnergroup "${RUNNER_GROUP_NAME}" --labels "${RUNNER_LABELS}"
+./config.sh --url "https://github.com/${RUNNER_SCOPE}" \
+            --unattended --disableupdate \
+            --token "${RUNNER_TOKEN}" --name "${RUNNER_NAME}" --runnergroup "${RUNNER_GROUP_NAME}" --labels "${RUNNER_LABELS}"
 
 # start GitHub runner
 ./run.sh & wait ${!}
