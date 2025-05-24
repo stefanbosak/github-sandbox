@@ -20,6 +20,18 @@ jobs:
       - name: 'Run task'
         shell: bash
         run: echo "Running arch=$(uname -m) runner_name=${{ runner.name }} on hostname=$(hostname)."
+      - name: 'Run task'
+        shell: bash
+        run: echo "Running arch=$(uname -m) runner_name=${{ runner.name }} on hostname=$(hostname)."
+      - name: 'Run task'
+        shell: bash
+        run: echo "Running arch=$(uname -m) runner_name=${{ runner.name }} on hostname=$(hostname)."
+      - name: 'Run task'
+        shell: bash
+        run: echo "Running arch=$(uname -m) runner_name=${{ runner.name }} on hostname=$(hostname)."
+      - name: 'Run task'
+        shell: bash
+        run: echo "Running arch=$(uname -m) runner_name=${{ runner.name }} on hostname=$(hostname)."
 #      - name: 'Start docker'
 #        shell: bash
 #        run: |
