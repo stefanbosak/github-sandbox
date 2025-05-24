@@ -32,6 +32,7 @@ jobs:
         shell: bash
         run: |
           if [ ! -z "$(which docker)" ]; then
+            id
             docker container run --rm alpine/curl -fsSL https://ifconfig.me
           else
             echo "Docker is not present"
