@@ -23,8 +23,10 @@ jobs:
       - name: 'Start docker'
         shell: bash
         run: |
+          id
           sudo /etc/init.d/docker restart
       - name: 'Run docker container'
         shell: bash
         run: |
+          id
           docker run --rm alpine/curl -fsSL https://ifconfig.me
