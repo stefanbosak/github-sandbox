@@ -45,6 +45,8 @@ LABEL stage="github-sandbox-image" \
 
 ARG DEBIAN_FRONTEND
 
+ARG TARGETOS
+ARG TARGETARCH
 
 ARG CONTAINER_USER
 ARG CONTAINER_GROUP
@@ -94,7 +96,12 @@ RUN chown "${CONTAINER_USER}:${CONTAINER_GROUP}" "/start.sh" && \
     cd "${WORKSPACE_ROOT_DIR}/actions-runner" && \
     ./bin/installdependencies.sh && \
     chown -R "${CONTAINER_USER}:${CONTAINER_GROUP}" "/home/${CONTAINER_USER}" && \
-    curl -fsSL https://get.docker.com | sh && \
+# DiD (Docker in Docker)
+# - install Docker only on AMD64 (ARM64 requires ARM64 kernel from host system which is not present on AMD64 host)
+    case "${TARGETARCH}" in \
+      *amd64*) curl -fsSL https://get.docker.com | sh ;; \
+      *) groupadd --gid 990 docker ;; \
+    esac && \
     usermod -aG docker "${CONTAINER_USER}"
 
 # since the config and run script for actions are not allowed to be run by root,

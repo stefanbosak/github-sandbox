@@ -56,7 +56,7 @@ for platform in "${PLATFORMS[@]}"; do
 
   # start unique standalone GitHub runner Docker container (optionally with labels, group name)
   # - privileged mode is required for DinD (Docker in Docker)
-  docker container run --platform "${platform}" -ti -v /dev:/dev \
+  docker container run --platform "${platform}" -v /dev:/dev \
                        --privileged \
                        --env GH_TOKEN="${GH_TOKEN}" \
                        --env GH_API_VERSION="${GH_API_VERSION}" \
@@ -71,4 +71,3 @@ for platform in "${PLATFORMS[@]}"; do
                        --group-add "docker" \
                        "${CONTAINER_REPOSITORY}${CONTAINER_IMAGE_NAME}${CONTAINER_IMAGE_TAG}"
 done
-

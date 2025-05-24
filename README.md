@@ -3,6 +3,7 @@ Aim of this repository is to offer support for GitHub self-hosted runners operat
 
 covered tool:
 - [GitHub Actions runner](https://github.com/actions/runner)
+- [Docker in Docker for AMD64](https://www.docker.com/resources/docker-in-docker-containerized-ci-workflows-dockercon-2023/)
 
 > [!NOTE]
 > Every script and file would be reasonable well commented and relevant details can be found there.
@@ -18,6 +19,13 @@ covered tool:
 - edit setvariables.sh (modify variables correspondingly if neeed)
 - store GitHub classic personal access token in ~/GHToken.txt
 - store GitHub fine-grained personal access token for organization in ~/GHTokenOrg.txt
+
+## Multi-architecture support
+- on host system with QEMU ARM64 binfmt enabled capablities build can generate multi-architecture images (AMD64 & ARM64)
+
+## DinD (Docker in Docker) support
+- AMD64 image contains Docker installation
+- ARM64 is not supported (require ARM64 kernel on host system)
 
 ## Docker compose build, run and scale runners
 - for registration of runner as shared under organization use parameter --repo null

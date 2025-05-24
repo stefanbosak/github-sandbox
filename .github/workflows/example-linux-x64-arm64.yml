@@ -23,11 +23,16 @@ jobs:
       - name: 'Start docker'
         shell: bash
         run: |
-          id
-          sudo /etc/init.d/docker restart
+          if [ ! -z "$(which docker)" ]; then
+            sudo /etc/init.d/docker restart
+          else
+            echo "Docker is not present"
+          fi
       - name: 'Run docker container'
         shell: bash
         run: |
-          id
-          docker system info
-          docker container run --rm alpine/curl -fsSL https://ifconfig.me
+          if [ ! -z "$(which docker)" ]; then
+            docker container run --rm alpine/curl -fsSL https://ifconfig.me
+          else
+            echo "Docker is not present"
+          fi
