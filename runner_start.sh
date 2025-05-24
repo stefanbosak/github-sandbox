@@ -68,7 +68,7 @@ for platform in "${PLATFORMS[@]}"; do
                        --env RUNNER_LABELS="${RUNNER_LABELS}" \
                        --env WORKSPACE_ROOT_DIR="${WORKSPACE_ROOT_DIR}" \
                        --network=host --detach --rm --name "${runner_name}" \
-                       --group-add "docker" --group-add "sudo" \
+                       --group-add "docker" \
                        "${CONTAINER_REPOSITORY}${CONTAINER_IMAGE_NAME}${CONTAINER_IMAGE_TAG}"
 done
 
