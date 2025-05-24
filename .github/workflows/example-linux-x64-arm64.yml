@@ -29,4 +29,5 @@ jobs:
         shell: bash
         run: |
           id
+          docker system info
           docker container run --rm --group-add "docker" --group-add "sudo" alpine/curl -fsSL https://ifconfig.me
