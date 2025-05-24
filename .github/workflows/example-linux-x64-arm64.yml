@@ -30,4 +30,4 @@ jobs:
         run: |
           id
           docker system info
-          docker container run --rm --group-add "docker" alpine/curl -fsSL https://ifconfig.me
+          docker container run --rm alpine/curl -fsSL https://ifconfig.me
