@@ -68,14 +68,14 @@ WORKDIR "${WORKSPACE_ROOT_DIR}"
 # setup user profile
 RUN if ! getent passwd ${CONTAINER_USER_ID}; then \
         groupadd --gid ${CONTAINER_GROUP_ID} "${CONTAINER_GROUP}" && \
-        useradd --gid ${CONTAINER_GROUP_ID} --groups "sudo,${CONTAINER_USER}" --create-home --uid ${CONTAINER_USER_ID} "${CONTAINER_USER}" -s "/bin/bash"; \
+        useradd --gid ${CONTAINER_GROUP_ID} --groups "sudo,${CONTAINER_USER}" -M -d "${WORKSPACE_ROOT_DIR}" --uid ${CONTAINER_USER_ID} "${CONTAINER_USER}" -s "/bin/bash"; \
     else \
         rm -fr "/home/${CONTAINER_USER}" && \
-        mv "/home/debian" "/home/${CONTAINER_USER}" && \
-        usermod -d "/home/${CONTAINER_USER}" -c "${CONTAINER_USER}" "debian" && \
+        mv "/home/debian" "${WORKSPACE_ROOT_DIR}" && \
+        usermod -M -d "${WORKSPACE_ROOT_DIR}" -c "${CONTAINER_USER}" "debian" && \
         groupmod -n "${CONTAINER_USER}" "debian" && \
         usermod -l "${CONTAINER_USER}" "debian" && \
-        chown -R "${CONTAINER_USER}:${CONTAINER_GROUP}" "/home/${CONTAINER_USER}"; \
+        chown -R "${CONTAINER_USER}:${CONTAINER_GROUP}" "${WORKSPACE_ROOT_DIR}"; \
     fi && \
 # update the base packages
     apt-get update -y && apt-get dist-upgrade -y && \
@@ -103,7 +103,7 @@ RUN chown "${CONTAINER_USER}:${CONTAINER_GROUP}" "/start.sh" && \
 # Install dependencies
     cd "${WORKSPACE_ROOT_DIR}/actions-runner" && \
     ./bin/installdependencies.sh && \
-    chown -R "${CONTAINER_USER}:${CONTAINER_GROUP}" "/home/${CONTAINER_USER}" && \
+    chown -R "${CONTAINER_USER}:${CONTAINER_GROUP}" "${WORKSPACE_ROOT_DIR}" && \
 # DiD (Docker in Docker)
 # - DinD via QEMU on ARM64 is not supported
 #   (ARM64 requires ARM64 kernel from host system which is not present on AMD64 host)
