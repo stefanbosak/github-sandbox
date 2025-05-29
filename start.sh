@@ -9,7 +9,7 @@ RUNNER_GROUP_NAME=${RUNNER_GROUP_NAME:-"default"}
 # GitHub runner labels
 RUNNER_LABELS=${RUNNER_LABELS:-"$(hostname -s),$(date +"%s"),${RUNNER_GROUP_NAME}"}
 
-cd "${WORKSPACE_ROOT_DIR}/actions-runner" || exit
+cd "${HOME}/actions-runner" || exit
 
 # cleanup handler
 cleanup() {
