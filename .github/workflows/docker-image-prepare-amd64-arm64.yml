@@ -38,8 +38,7 @@ jobs:
       - name: 'Set requested tools versions to GITHUB_ENV'
         shell: bash
         run: |
-          export cwd=$(pwd)
-          export DH_USER="${{ secrets.DH_USER }}"; export DH_TOKEN="${{ secrets.DH_TOKEN }}"; export GH_PERSONAL_TOKEN="${{ secrets.GH_TOKEN }}"; export GH_TOKEN_ORG="${{ secrets.GH_TOKEN_ORG }}"; source ${cwd}/setvariables.sh
+          export DH_USER="${{ secrets.DH_USER }}"; export DH_TOKEN="${{ secrets.DH_TOKEN }}"; export GH_PERSONAL_TOKEN="${{ secrets.GH_TOKEN }}"; export GH_TOKEN_ORG="${{ secrets.GH_TOKEN_ORG }}"; source ./setvariables.sh
           echo "CONTAINER_TAG=initial" >> ${GITHUB_ENV}
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             if [[ "${{ github.event.inputs.RUNNER_CLI_VERSION }}" != "" ]]; then
@@ -50,7 +49,7 @@ jobs:
             fi
           fi
           echo "___1"
-          export DH_USER="${{ secrets.DH_USER }}"; export DH_TOKEN="${{ secrets.DH_TOKEN }}"; export GH_PERSONAL_TOKEN="${{ secrets.GH_TOKEN }}"; export GH_TOKEN_ORG="${{ secrets.GH_TOKEN_ORG }}"; source ${cwd}/setvariables.sh
+          export DH_USER="${{ secrets.DH_USER }}"; export DH_TOKEN="${{ secrets.DH_TOKEN }}"; export GH_PERSONAL_TOKEN="${{ secrets.GH_TOKEN }}"; export GH_TOKEN_ORG="${{ secrets.GH_TOKEN_ORG }}"; source ./setvariables.sh
           echo "___2"
           cat /tmp/github_env_tail >> ${GITHUB_ENV}
           echo "WORKSPACE_ROOT_DIR=/home/${CONTAINER_USER}" >> ${GITHUB_ENV}
