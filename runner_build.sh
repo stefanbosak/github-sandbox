@@ -1,5 +1,5 @@
 #!/bin/bash
-cwd=$(dirname $(realpath "${0}"))
+cwd=$(dirname $(readlink -f $(pwd -P)))
 
 # directory for storing capture of pushed versions
 PUSHED_CLI_VERSIONS_FILE_DIR=$(mktemp -d)

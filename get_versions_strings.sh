@@ -2,7 +2,7 @@
 #
 # Wrapper for recognizing latest available tools versions
 #
-cwd=$(dirname $(realpath "${0}"))
+cwd=$(dirname $(readlink -f $(pwd -P)))
 
 # site prefix
 GH_SITE="github.com"

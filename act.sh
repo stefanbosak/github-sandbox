@@ -6,7 +6,7 @@
 #
 # change parameters, add/modify propagated secrets before first use
 #
-cwd=$(dirname $(realpath "${0}"))
+cwd=$(dirname $(readlink -f $(pwd -P)))
 
 source "${cwd}/setvariables.sh"
 

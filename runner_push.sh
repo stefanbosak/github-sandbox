@@ -7,7 +7,7 @@
 # - use setvariables.sh for configuring versions and other variables
 # - modify/align to fit user needs/requirements at your own
 #
-cwd=$(dirname $(realpath "${0}"))
+cwd=$(dirname $(readlink -f $(pwd -P)))
 
 # set variables
 source "${cwd}/setvariables.sh"
