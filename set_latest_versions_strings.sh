@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 #
 # Wrapper to automatically detect and set latest
 # available versions for all of related tools
