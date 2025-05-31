@@ -38,6 +38,8 @@ jobs:
       - name: 'Set requested tools versions to GITHUB_ENV'
         shell: bash
         run: |
+          pwd
+          dirname $(realpath $(pwd))
           ls -la
           export DH_USER="${{ secrets.DH_USER }}"; export DH_TOKEN="${{ secrets.DH_TOKEN }}"; export GH_PERSONAL_TOKEN="${{ secrets.GH_TOKEN }}"; export GH_TOKEN_ORG="${{ secrets.GH_TOKEN_ORG }}"; source ./setvariables.sh
           echo "CONTAINER_TAG=initial" >> ${GITHUB_ENV}
