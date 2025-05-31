@@ -1,8 +1,6 @@
-#!/bin/bash -x
+#!/bin/bash
 #
 # Configuration of versions and other variables
-#
-# changed: 2025-May-10
 #
 # NOTEs:
 # - any execution and modification(s) is only in responsibility of user
@@ -12,7 +10,7 @@
 #   (following variables have default/pre-defined values
 #    and can be overrided by environment variables)
 #
-cwd=$(dirname $(realpath ${BASH_SOURCE[0]}))
+cwd=$(dirname $(realpath "${0}"))
 
 # GitHub Actions workflow environment tail file
 export GITHUB_ENV_TAIL_FILE=${GITHUB_ENV_TAIL_FILE:-"/tmp/github_env_tail"}

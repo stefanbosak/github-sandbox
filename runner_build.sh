@@ -1,5 +1,5 @@
 #!/bin/bash
-cwd=$(dirname $(realpath ${BASH_SOURCE[0]}))
+cwd=$(dirname $(realpath "${0}"))
 
 # directory for storing capture of pushed versions
 PUSHED_CLI_VERSIONS_FILE_DIR=$(mktemp -d)

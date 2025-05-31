@@ -7,7 +7,7 @@
 # - use setvariables.sh for configuring versions and other variables
 # - modify/align to fit user needs/requirements at your own
 #
-cwd=$(dirname $(realpath ${BASH_SOURCE[0]}))
+cwd=$(dirname $(realpath "${0}"))
 
 # set variables
 source "${cwd}/setvariables.sh"

@@ -39,7 +39,6 @@ jobs:
         shell: bash
         run: |
           export DH_USER="${{ secrets.DH_USER }}"; export DH_TOKEN="${{ secrets.DH_TOKEN }}"; export GH_PERSONAL_TOKEN="${{ secrets.GH_TOKEN }}"; export GH_TOKEN_ORG="${{ secrets.GH_TOKEN_ORG }}"; ./setvariables.sh
-
           echo "CONTAINER_TAG=initial" >> ${GITHUB_ENV}
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             if [[ "${{ github.event.inputs.RUNNER_CLI_VERSION }}" != "" ]]; then

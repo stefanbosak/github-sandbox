@@ -1,5 +1,5 @@
 #!/bin/bash
-cwd=$(dirname $(realpath ${BASH_SOURCE[0]}))
+cwd=$(dirname $(realpath "${0}"))
 
 # extract parameters from command-line
 while [[ $# -gt 0 ]]; do

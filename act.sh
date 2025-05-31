@@ -6,7 +6,7 @@
 #
 # change parameters, add/modify propagated secrets before first use
 #
-cwd=$(dirname $(realpath ${BASH_SOURCE[0]}))
+cwd=$(dirname $(realpath "${0}"))
 
 source "${cwd}/setvariables.sh"
 

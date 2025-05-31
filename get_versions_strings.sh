@@ -2,7 +2,7 @@
 #
 # Wrapper for recognizing latest available tools versions
 #
-cwd=$(dirname $(realpath ${BASH_SOURCE[0]}))
+cwd=$(dirname $(realpath "${0}"))
 
 # site prefix
 GH_SITE="github.com"
