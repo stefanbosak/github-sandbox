@@ -50,7 +50,7 @@ jobs:
           fi
           echo "___1"
           export DH_USER="${{ secrets.DH_USER }}"; export DH_TOKEN="${{ secrets.DH_TOKEN }}"; export GH_PERSONAL_TOKEN="${{ secrets.GH_TOKEN }}"; export GH_TOKEN_ORG="${{ secrets.GH_TOKEN_ORG }}"; ./setvariables.sh
-          echo "___2"
+          echo "___2__${CONTAINER_USER}__"
           cat /tmp/github_env_tail >> ${GITHUB_ENV}
           echo "WORKSPACE_ROOT_DIR=/home/${CONTAINER_USER}" >> ${GITHUB_ENV}
           echo "REPOSITORY_NAME=${GITHUB_REPOSITORY#$GITHUB_REPOSITORY_OWNER/}" >> ${GITHUB_ENV}
