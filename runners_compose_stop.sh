@@ -1,5 +1,5 @@
 #!/bin/bash
-cwd=$(dirname $(readlink -f $(pwd -P)))
+cwd=$(dirname $(realpath ${BASH_SOURCE[0]}))
 
 # extract parameters from command-line
 while [[ $# -gt 0 ]]; do

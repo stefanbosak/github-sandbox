@@ -3,7 +3,7 @@
 # Wrapper to automatically detect and set latest
 # available versions for all of related tools
 #
-cwd=$(dirname $(readlink -f $(pwd -P)))
+cwd=$(dirname $(realpath ${BASH_SOURCE[0]}))
 
 # create temporary workspace
 TMP_DIR=$(mktemp -d)

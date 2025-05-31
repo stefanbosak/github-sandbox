@@ -12,7 +12,7 @@
 #   (following variables have default/pre-defined values
 #    and can be overrided by environment variables)
 #
-cwd=$(dirname $(readlink -f $(pwd -P)))
+cwd=$(dirname $(realpath ${BASH_SOURCE[0]}))
 
 # GitHub Actions workflow environment tail file
 export GITHUB_ENV_TAIL_FILE=${GITHUB_ENV_TAIL_FILE:-"/tmp/github_env_tail"}
