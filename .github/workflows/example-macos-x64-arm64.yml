@@ -1,0 +1,21 @@
+name: 'Example for MacOS'
+
+on:
+  workflow_dispatch:
+    inputs:
+      os:
+        description: 'Runner label'
+        required: true
+        default: '["macos-13","macos-latest"]'
+        type: string
+
+jobs:
+  # running simple jobs on default GitHub hosted MacOS runners (x64, arm64)
+  test:
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        runner: ${{ fromJson(inputs.os) }}
+    steps:
+      - name: 'Run task'
+        run: echo "Running arch=$(uname -m) runner_name=${RUNNER_NAME} on hostname=$(hostname) !"

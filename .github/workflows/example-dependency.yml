@@ -1,0 +1,49 @@
+name: 'Example of dependent jobs'
+
+on:
+  workflow_dispatch:
+    inputs:
+      os:
+        description: 'Runner label'
+        required: true
+        default: '["ubuntu-latest","ubuntu-24.04-arm"]'
+        type: string
+
+jobs:
+  job-1:
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        runner: ${{ fromJson(inputs.os) }}
+    steps:
+      - name: 'Run job-1'
+        shell: bash
+        run: echo "Running job-1 arch=$(uname -m) runner_name=${{ runner.name }} on hostname=$(hostname)."
+
+  job-2:
+    needs: job-1
+    runs-on:
+      group: ${{ matrix.runner_group }}
+      labels: ${{ matrix.os }}
+    strategy:
+      matrix:
+        runner_group: ${{ fromJson(inputs.runner_group) }}
+        os: ${{ fromJson(inputs.os) }}
+    steps:
+      - name: 'Run job-2'
+        shell: bash
+        run: echo "Running job-2 after job-1 arch=$(uname -m) runner_name=${{ runner.name }} on hostname=$(hostname)."
+
+  job-3:
+    needs: [job-1, job-2]
+    runs-on:
+      group: ${{ matrix.runner_group }}
+      labels: ${{ matrix.os }}
+    strategy:
+      matrix:
+        runner_group: ${{ fromJson(inputs.runner_group) }}
+        os: ${{ fromJson(inputs.os) }}
+    steps:
+      - name: 'Run job-3'
+        shell: bash
+        run: echo "Running job-3 after job-1 and job-2 arch=$(uname -m) runner_name=${{ runner.name }} on hostname=$(hostname)."

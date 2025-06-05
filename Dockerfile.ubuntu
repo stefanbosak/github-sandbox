@@ -1,0 +1,120 @@
+# user in container
+ARG CONTAINER_USER=user
+ARG CONTAINER_GROUP=user
+
+ARG CONTAINER_USER_ID=1000
+ARG CONTAINER_GROUP_ID=1000
+
+# set location of workspace directory
+# (temporary space within container image)
+ARG WORKSPACE_ROOT_DIR="/home/${CONTAINER_USER}"
+
+# Ubuntu release version
+ARG UBUNTU_RELEASE=24.04
+ARG DEBIAN_FRONTEND=noninteractive
+
+# set the GitHub runner version
+ARG RUNNER_CLI_VERSION=2.324.0
+
+FROM alpine:latest AS github-sandbox-builder
+
+LABEL stage="github-sandbox-builder" \
+      description="Debian-based container builder for preparing GitHub tools self-hosted runner" \
+      org.opencontainers.image.description="Debian-based container builder for preparing GitHub tools self-hosted runner" \
+      org.opencontainers.image.source=https://github.com/stefanbosak/github-sandbox
+
+ARG TARGETOS
+ARG TARGETARCH
+
+ARG RUNNER_CLI_VERSION
+
+ARG WORKSPACE_ROOT_DIR
+WORKDIR "${WORKSPACE_ROOT_DIR}/actions-runner"
+
+# download and unpack the github actions runner
+RUN apk --no-cache add curl && uri=$(echo "https://github.com/actions/runner/releases/download/v${RUNNER_CLI_VERSION}/actions-runner-${TARGETOS}-${TARGETARCH}-${RUNNER_CLI_VERSION}.tar.gz" | \
+    sed -e 's/amd64/x64/g') && curl -sSL "${uri}" -o "${WORKSPACE_ROOT_DIR}/actions-runner/actions-runner.tar.gz" && \
+    cd "${WORKSPACE_ROOT_DIR}/actions-runner" && \
+    tar -xvf "actions-runner.tar.gz" -C "." && \
+    rm -f "actions-runner-linux.tar.gz"
+
+# base for image
+FROM ubuntu:${UBUNTU_RELEASE} AS github-sandbox-image
+
+LABEL stage="github-sandbox-image" \
+      description="Ubuntu-based container GitHub tools self-hosted runner" \
+      org.opencontainers.image.description="Ubuntu-based container GitHub tools self-hosted runner" \
+      org.opencontainers.image.source=https://github.com/stefanbosak/github-sandbox
+
+ARG DEBIAN_FRONTEND
+
+# set locales
+ENV LANG=C.UTF-8
+ENV TZ=UTC
+
+ARG TARGETOS
+ARG TARGETARCH
+
+ARG CONTAINER_USER
+ARG CONTAINER_GROUP
+
+ARG CONTAINER_USER_ID
+ARG CONTAINER_GROUP_ID
+
+ARG WORKSPACE_ROOT_DIR
+WORKDIR "${WORKSPACE_ROOT_DIR}"
+
+# setup user profile
+RUN if ! getent passwd ${CONTAINER_USER_ID}; then \
+        groupadd --gid ${CONTAINER_GROUP_ID} ${CONTAINER_GROUP} && \
+        useradd --gid ${CONTAINER_GROUP_ID} --groups "sudo,${CONTAINER_USER}" -M -d "${WORKSPACE_ROOT_DIR}" --uid ${CONTAINER_USER_ID} "${CONTAINER_USER}" -s "/bin/bash"; \
+    else \
+        rm -fr "/home/${CONTAINER_USER}" && \
+        mv "/home/ubuntu" "${WORKSPACE_ROOT_DIR}" && \
+        usermod -M -d "${WORKSPACE_ROOT_DIR}" -c "${CONTAINER_USER}" "ubuntu" && \
+        groupmod -n "${CONTAINER_USER}" "ubuntu" && \
+        usermod -l "${CONTAINER_USER}" "ubuntu" && \
+        chown -R "${CONTAINER_USER}:${CONTAINER_GROUP}" "${WORKSPACE_ROOT_DIR}"; \
+    fi && \
+# update the base packages
+    apt-get update -y && apt-get dist-upgrade -y && \
+# install packages
+    apt-get install -y --no-install-recommends \
+    build-essential \
+    ca-certificates \
+    libicu74 libkrb5-3 zlib1g \
+    curl jq \
+    sudo iputils-ping iproute2 \
+    unzip bash-completion && \
+    apt-get clean &&  rm -rf /var/lib/apt/lists/* && \
+# Set up the runner user
+    echo "${CONTAINER_USER} ALL=(ALL) NOPASSWD:ALL" > "/etc/sudoers.d/${CONTAINER_USER}"
+
+# copy over the start.sh script
+COPY start.sh "/start.sh"
+
+# copy data from builder
+COPY --from=github-sandbox-builder "${WORKSPACE_ROOT_DIR}/actions-runner" "${WORKSPACE_ROOT_DIR}/actions-runner"
+
+# make the script executable
+RUN chown "${CONTAINER_USER}:${CONTAINER_GROUP}" "/start.sh" && \
+    chmod +x "/start.sh" && \
+# Install dependencies
+    cd "${WORKSPACE_ROOT_DIR}/actions-runner" && \
+    ./bin/installdependencies.sh && \
+    chown -R "${CONTAINER_USER}:${CONTAINER_GROUP}" "${WORKSPACE_ROOT_DIR}" && \
+# DiD (Docker in Docker)
+# - DinD via QEMU on ARM64 is not supported
+#   (ARM64 requires ARM64 kernel from host system which is not present on AMD64 host)
+    curl -fsSL https://get.docker.com | sh && \
+    if ! getent group docker > /dev/null 2>&1; then \
+      groupadd docker; \
+    fi && \
+    usermod -aG docker "${CONTAINER_USER}"
+
+# since the config and run script for actions are not allowed to be run by root,
+# set the user to "runner" so all subsequent commands are run as the user
+USER "${CONTAINER_USER}:${CONTAINER_GROUP}"
+
+# set the entrypoint to the start.sh script
+ENTRYPOINT ["/start.sh"]
