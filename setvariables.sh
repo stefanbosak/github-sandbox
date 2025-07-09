@@ -87,7 +87,7 @@ export UBUNTU_RELEASES_URI="https://changelogs.ubuntu.com/meta-release"
 export UBUNTU_RELEASES_URI="${UBUNTU_RELEASES_URI}-lts"
 
 # extract last supported Ubuntu LTS release
-export UBUNTU_RELEASE=$(curl -s "${UBUNTU_RELEASES_URI}" | awk '/^Version:/ {if ($2 ~ /^[0-9]{2}\.[0-9]{2}\./) version=substr($2, 1, 5)} /^Supported: 1/ {if (version) print version}' | tail -n 1)
+export UBUNTU_RELEASE=$(curl -s "${UBUNTU_RELEASES_URI}" | awk '/^Version:/ {if ($2 ~ /^[0-9]{2}\.[0-9]{2}/) version=substr($2, 1, 5)} /^Supported: 1/ {if (version) print version}' | tail -n 1)
 
 # default target OS, architecture and platforms
 export TARGETOS=${TARGETOS:-linux}
