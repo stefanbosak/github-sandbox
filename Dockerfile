@@ -83,7 +83,7 @@ RUN if ! getent passwd ${CONTAINER_USER_ID}; then \
     apt-get install -y --no-install-recommends \
     build-essential \
     ca-certificates \
-    libicu72 libkrb5-3 zlib1g \
+    libicu76 libkrb5-3 zlib1g \
     curl jq \
     sudo iputils-ping iproute2 \
     unzip bash-completion && \
