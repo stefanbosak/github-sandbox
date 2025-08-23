@@ -27,7 +27,7 @@ services:
       - RUNNER_GROUP_NAME
       - RUNNER_LABELS
       - WORKSPACE_ROOT_DIR
-    image: "${CONTAINER_REPOSITORY}${CONTAINER_IMAGE_NAME}-amd64${CONTAINER_IMAGE_TAG}"
+    image: "${CONTAINER_REPOSITORY}${CONTAINER_IMAGE_NAME}${CONTAINER_IMAGE_TAG}"
     group_add:
       - docker
     stop_grace_period: 360s
