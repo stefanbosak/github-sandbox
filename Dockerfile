@@ -14,7 +14,7 @@ ARG DEBIAN_RELEASE=stable-slim
 ARG DEBIAN_FRONTEND=noninteractive
 
 # set the GitHub runner version
-ARG RUNNER_CLI_VERSION=2.324.0
+ARG RUNNER_CLI_VERSION=2.335.1
 
 # builder
 FROM alpine:latest AS github-sandbox-builder
@@ -81,15 +81,20 @@ RUN if ! getent passwd ${CONTAINER_USER_ID}; then \
     apt-get update -y && apt-get dist-upgrade -y && \
 # install packages
     apt-get install -y --no-install-recommends \
-    build-essential \
-    ca-certificates \
+    build-essential git git-lfs \
+    ca-certificates wget \
     libicu76 libkrb5-3 zlib1g \
-    curl jq \
+    curl jq apt-transport-https gpg \
     sudo iputils-ping iproute2 \
     unzip bash-completion && \
-    apt-get clean &&  rm -rf /var/lib/apt/lists/* && \
+    apt-get clean &&  rm -rf /var/lib/apt/lists/*
+
 # Set up the runner user
-    echo "${CONTAINER_USER} ALL=(ALL) NOPASSWD:ALL" > "/etc/sudoers.d/${CONTAINER_USER}"
+RUN echo "${CONTAINER_USER} ALL=(ALL) NOPASSWD:ALL" > "/etc/sudoers.d/${CONTAINER_USER}" && \
+# install Temurin JDK
+    wget -qO - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor | tee /etc/apt/trusted.gpg.d/adoptium.gpg > /dev/null && \
+    echo "deb https://packages.adoptium.net/artifactory/deb $(awk -F= '/^VERSION_CODENAME/{print$2}' /etc/os-release) main" | tee /etc/apt/sources.list.d/adoptium.list && \
+    apt-get update && apt-get install -y --no-install-recommends temurin-25-jdk
 
 # copy over the start.sh script
 COPY start.sh "/start.sh"
