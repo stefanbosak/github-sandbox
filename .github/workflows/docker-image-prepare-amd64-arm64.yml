@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
     inputs:
       RUNNER_CLI_VERSION:
-        description: 'RUNNER_CLI_VERSION (2.324.0)'
+        description: 'RUNNER_CLI_VERSION (2.335.1)'
         required: false
         type: string
       CONTAINER_TAG:
@@ -133,9 +133,15 @@ jobs:
           secrets: |
             GIT_AUTH_TOKEN=${{ secrets.GH_TOKEN }}
           tags: |
-            ${{ secrets.DH_USER }}/${{ env.REPOSITORY_NAME }}:${{ env.CONTAINER_TAG }}
-            ${{ env.GH_REGISTRY }}/${{ github.repository_owner }}/${{ env.REPOSITORY_NAME }}:${{ env.CONTAINER_TAG }}
+            ${{ env.GH_REGISTRY }}/${{ github.repository }}::${{ env.CONTAINER_TAG }}
+            ${{ env.DH_REGISTRY }}/${{ secrets.DH_USER }}/${{ env.REPOSITORY_NAME }}:${{ env.CONTAINER_TAG }}
+          labels: |
+            org.opencontainers.image.authors=${{ github.repository_owner }}
+            org.opencontainers.image.url=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
           platforms: linux/amd64,linux/arm64
+          outputs: |
+            type=image,compression=gzip,compression-level=3,force-compression=true
       - name: 'Pull git'
         if: ${{ env.CLI_VERSIONS_CHANGED == '1' }}
         run: |
