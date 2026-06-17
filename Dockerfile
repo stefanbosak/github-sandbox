@@ -37,7 +37,7 @@ RUN apk --no-cache add curl && uri=$(echo "https://github.com/actions/runner/rel
     sed -e 's/amd64/x64/g') && curl -sSL "${uri}" -o "${WORKSPACE_ROOT_DIR}/actions-runner/actions-runner.tar.gz" && \
     cd "${WORKSPACE_ROOT_DIR}/actions-runner" && \
     tar -xvf "actions-runner.tar.gz" -C "." && \
-    rm -f "actions-runner-linux.tar.gz"
+    rm -f "actions-runner.tar.gz"
 
 # base for image
 FROM debian:${DEBIAN_RELEASE} AS github-sandbox-image
