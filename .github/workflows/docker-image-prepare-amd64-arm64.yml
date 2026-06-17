@@ -133,7 +133,7 @@ jobs:
           secrets: |
             GIT_AUTH_TOKEN=${{ secrets.GH_TOKEN }}
           tags: |
-            ${{ env.GH_REGISTRY }}/${{ github.repository }}::${{ env.CONTAINER_TAG }}
+            ${{ env.GH_REGISTRY }}/${{ github.repository }}:${{ env.CONTAINER_TAG }}
             ${{ env.DH_REGISTRY }}/${{ secrets.DH_USER }}/${{ env.REPOSITORY_NAME }}:${{ env.CONTAINER_TAG }}
           labels: |
             org.opencontainers.image.authors=${{ github.repository_owner }}
