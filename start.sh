@@ -37,7 +37,7 @@ export RUNNER_TOKEN=$(curl -s -L -H "Accept: application/vnd.github+json" \
             --unattended --disableupdate \
             --token "${RUNNER_TOKEN}" --name "${RUNNER_NAME}" --runnergroup "${RUNNER_GROUP_NAME}" --labels "${RUNNER_LABELS}"
 
-echo "${RUNNER_NAME}" > /etc/runner_name
+echo "${RUNNER_NAME}" > /tmp/runner_name
 
 # start GitHub runner
 ./run.sh & wait ${!}
