@@ -75,11 +75,13 @@ RUN apt-get update -y && apt-get dist-upgrade -y \
       rsync ripgrep sqlite3 socat sudo unzip vim-tiny wget yq xz-utils zip zlib1g zstd zsync \
     && apt-get autoremove -y &&  apt-get autoclean -y && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+SHELL ["/bin/bash", "-c"]
+
 # Set up the runner user
 RUN echo "${CONTAINER_USER} ALL=(ALL) NOPASSWD:ALL" > "/etc/sudoers.d/${CONTAINER_USER}" && \
 # install SDKMAN
     export SDKMAN_DIR="/usr/local/sdkman" && curl -s "https://get.sdkman.io?ci=true&rcupdate=false" | bash && \
-    source "/usr/local/sdkman/bin/sdkman-init.sh" && \
+    . "/usr/local/sdkman/bin/sdkman-init.sh" && \
 # install JDKs and SDKs
     sdk install java 8.0.492-tem && \
     sdk install java 21.0.11-tem && \
