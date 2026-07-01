@@ -70,9 +70,9 @@ RUN apt-get update -y && apt-get dist-upgrade -y \
 # install packages
     && apt-get install -y --no-install-recommends \
       apt-transport-https apt-utils bash-completion bc build-essential ca-certificates curl dnsutils \
-      file gh git git-lfs gnupg2 gpg iproute2 iputils-ping jq kmod libicu76 libkrb5-3 locales lzma lz4 \
-      net-tools netcat-openbsd pigz postgresql-client procps psmisc python-is-python3 p7zip-full rsync \
-      ripgrep sqlite3 socat sudo unzip wget yq xz-utils zlib1g zstd zsync \
+      file gh git git-lfs gnupg2 gpg iproute2 iputils-ping jq kmod less libicu-dev libicu76 libkrb5-3 locales lzma lz4 \
+      nano net-tools netcat-openbsd openssh-client pigz postgresql-client procps psmisc python-is-python3 p7zip-full \
+      rsync ripgrep sqlite3 socat sudo unzip vi wget yq xz-utils zlib1g zstd zsync \
     && apt-get autoremove -y &&  apt-get autoclean -y && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Set up the runner user
@@ -80,7 +80,14 @@ RUN echo "${CONTAINER_USER} ALL=(ALL) NOPASSWD:ALL" > "/etc/sudoers.d/${CONTAINE
 # install Temurin JDK
     wget -qO - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor | tee /etc/apt/trusted.gpg.d/adoptium.gpg > /dev/null && \
     echo "deb https://packages.adoptium.net/artifactory/deb $(awk -F= '/^VERSION_CODENAME/{print$2}' /etc/os-release) main" | tee /etc/apt/sources.list.d/adoptium.list && \
-    apt-get update && apt-get install -y --no-install-recommends temurin-25-jdk && apt-get autoremove -y &&  apt-get autoclean -y && apt-get clean && rm -rf /var/lib/apt/lists/*
+    apt-get update && apt-get install -y --no-install-recommends temurin-8-jdk temurin-25-jdk maven ant ant-optional && \
+    apt-get autoremove -y &&  apt-get autoclean -y && apt-get clean && rm -rf /var/lib/apt/lists/* && \
+# Install uv (Python package manager)
+    curl -sSfL "https://astral.sh/uv/install.sh" && \
+      | UV_INSTALL_DIR=/usr/local/bin bash && \
+# Install bun (all-in-one JS toolkit)
+    curl -fsSL "https://bun.com/install" && \
+      | BUN_INSTALL=/usr/local bash
 
 RUN if getent group "${CONTAINER_GROUP_ID}" > /dev/null; then \
       _existing_group="$(getent group "${CONTAINER_GROUP_ID}" | cut -d: -f1)"; \
