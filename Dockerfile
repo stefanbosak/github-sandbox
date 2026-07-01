@@ -72,7 +72,7 @@ RUN apt-get update -y && apt-get dist-upgrade -y \
       apt-transport-https apt-utils bash-completion bc build-essential ca-certificates curl dnsutils \
       file gh git git-lfs gnupg2 gpg iproute2 iputils-ping jq kmod less libicu-dev libicu76 libkrb5-3 locales lzma lz4 \
       nano net-tools netcat-openbsd openssh-client pigz postgresql-client procps psmisc python-is-python3 p7zip-full \
-      rsync ripgrep sqlite3 socat sudo unzip vi wget yq xz-utils zlib1g zstd zsync \
+      rsync ripgrep sqlite3 socat sudo unzip vim-tiny wget yq xz-utils zlib1g zstd zsync \
     && apt-get autoremove -y &&  apt-get autoclean -y && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Set up the runner user
