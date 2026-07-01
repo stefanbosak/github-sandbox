@@ -72,16 +72,22 @@ RUN apt-get update -y && apt-get dist-upgrade -y \
       apt-transport-https apt-utils bash-completion bc build-essential ca-certificates curl dnsutils \
       file gh git git-lfs gnupg2 gpg iproute2 iputils-ping jq kmod less libicu-dev libicu76 libkrb5-3 locales lzma lz4 \
       nano net-tools netcat-openbsd openssh-client pigz postgresql-client procps psmisc python-is-python3 p7zip-full \
-      rsync ripgrep sqlite3 socat sudo unzip vim-tiny wget yq xz-utils zlib1g zstd zsync \
+      rsync ripgrep sqlite3 socat sudo unzip vim-tiny wget yq xz-utils zip zlib1g zstd zsync \
     && apt-get autoremove -y &&  apt-get autoclean -y && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Set up the runner user
 RUN echo "${CONTAINER_USER} ALL=(ALL) NOPASSWD:ALL" > "/etc/sudoers.d/${CONTAINER_USER}" && \
-# install Temurin JDK
-    wget -qO - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor | tee /etc/apt/trusted.gpg.d/adoptium.gpg > /dev/null && \
-    echo "deb https://packages.adoptium.net/artifactory/deb $(awk -F= '/^VERSION_CODENAME/{print$2}' /etc/os-release) main" | tee /etc/apt/sources.list.d/adoptium.list && \
-    apt-get update && apt-get install -y --no-install-recommends temurin-8-jdk temurin-25-jdk maven ant ant-optional && \
-    apt-get autoremove -y &&  apt-get autoclean -y && apt-get clean && rm -rf /var/lib/apt/lists/* && \
+# install SDKMAN
+    export SDKMAN_DIR="/usr/local/sdkman" && curl -s "https://get.sdkman.io?ci=true&rcupdate=false" | bash && \
+    source "/usr/local/sdkman/bin/sdkman-init.sh" && \
+# install JDKs and SDKs
+    sdk install java 8.0.492-tem && \
+    sdk install java 21.0.11-tem && \
+    sdk install ant 1.10.17 && \
+    sdk install gradle 9.6.1 && \
+    sdk install groovy 2.4.0 && \
+    sdk install maven 3.9.16 && \
+    sdk install kotlin 2.4.0 && \
 # Install uv (Python package manager)
     curl -sSfL "https://astral.sh/uv/install.sh" \
       | UV_INSTALL_DIR=/usr/local/bin bash && \
@@ -142,7 +148,8 @@ RUN chown "${CONTAINER_USER}:${CONTAINER_GROUP}" "/start.sh" && \
 # set the user to "runner" so all subsequent commands are run as the user
 USER "${CONTAINER_USER}:${CONTAINER_GROUP}"
 
-RUN cp /etc/skel/.bashrc "${HOME}"
+RUN cp /etc/skel/.bashrc "${HOME}" && \
+    echo 'source "/usr/local/sdkman/bin/sdkman-init.sh"' >> "${HOME}/.bashrc"
 
 # set the entrypoint to the start.sh script
 ENTRYPOINT ["/start.sh"]
