@@ -151,7 +151,7 @@ RUN chown "${CONTAINER_USER}:${CONTAINER_GROUP}" "/start.sh" && \
 USER "${CONTAINER_USER}:${CONTAINER_GROUP}"
 
 RUN cp /etc/skel/.bashrc "${HOME}" && \
-    echo 'export SDKMAN_DIR="/usr/local/sdkman"' >> "${HOME}/.bashrc"
+    echo 'export SDKMAN_DIR="/usr/local/sdkman"' >> "${HOME}/.bashrc" && \
     echo 'source "/usr/local/sdkman/bin/sdkman-init.sh"' >> "${HOME}/.bashrc"
 
 # set the entrypoint to the start.sh script
