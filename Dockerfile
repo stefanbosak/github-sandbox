@@ -83,10 +83,10 @@ RUN echo "${CONTAINER_USER} ALL=(ALL) NOPASSWD:ALL" > "/etc/sudoers.d/${CONTAINE
     apt-get update && apt-get install -y --no-install-recommends temurin-8-jdk temurin-25-jdk maven ant ant-optional && \
     apt-get autoremove -y &&  apt-get autoclean -y && apt-get clean && rm -rf /var/lib/apt/lists/* && \
 # Install uv (Python package manager)
-    curl -sSfL "https://astral.sh/uv/install.sh" && \
+    curl -sSfL "https://astral.sh/uv/install.sh" \
       | UV_INSTALL_DIR=/usr/local/bin bash && \
 # Install bun (all-in-one JS toolkit)
-    curl -fsSL "https://bun.com/install" && \
+    curl -fsSL "https://bun.com/install" \
       | BUN_INSTALL=/usr/local bash
 
 RUN if getent group "${CONTAINER_GROUP_ID}" > /dev/null; then \
