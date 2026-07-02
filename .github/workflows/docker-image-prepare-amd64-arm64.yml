@@ -6,9 +6,9 @@ concurrency:
   cancel-in-progress: true
 
 on:
-  schedule:
-    - cron: "45 22 * * *"
-      timezone: 'Europe/Bratislava'
+#  schedule:
+#    - cron: "45 22 * * *"
+#      timezone: 'Europe/Bratislava'
   workflow_dispatch:
     inputs:
       RUNNER_CLI_VERSION:
