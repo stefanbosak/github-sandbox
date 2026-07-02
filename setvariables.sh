@@ -142,7 +142,22 @@ export DOCKER_DEFAULT_PLATFORM="${TARGETPLATFORM}"
 # skip changing PUSHED_VERSIONS.txt when called locally from runner_*.sh scripts
 if [[ ! "${BASH_SOURCE[1]}" =~ runner.*\.sh ]]; then
   if [[ ! -f "${GITHUB_ENV_TAIL_FILE}" ]]; then
+    export ANT_VERSION=1.10.17
+    export JDK_8_VERSION=8.0.492-tem
+    export JDK_21_VERSION=21.0.11-tem
+    export GRADLE_VERSION=9.6.1
+    export GROOVY_VERSION=2.4.0
+    export MAVEN_VERSION=3.9.16
+    export KOTLIN_VERSION=2.4.0
+
     echo "RUNNER_CLI_VERSION=${RUNNER_CLI_VERSION}" >> "${GITHUB_ENV_TAIL_FILE}"
+    echo "ANT_VERSION=${ANT_VERSION}" >> "${GITHUB_ENV_TAIL_FILE}"
+    echo "JDK_8_VERSION=${JDK_8_VERSION}" >> "${GITHUB_ENV_TAIL_FILE}"
+    echo "JDK_21_VERSION=${JDK_21_VERSION}" >> "${GITHUB_ENV_TAIL_FILE}"
+    echo "GRADLE_VERSION=${GRADLE_VERSION}" >> "${GITHUB_ENV_TAIL_FILE}"
+    echo "GROOVY_VERSION=${GROOVY_VERSION}" >> "${GITHUB_ENV_TAIL_FILE}"
+    echo "MAVEN_VERSION=${MAVEN_VERSION}" >> "${GITHUB_ENV_TAIL_FILE}"
+    echo "KOTLIN_VERSION=${KOTLIN_VERSION}" >> "${GITHUB_ENV_TAIL_FILE}"
   fi
 
   # get CLI_VERSIONS_CHANGED_FLAG if has been found
