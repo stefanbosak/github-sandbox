@@ -10,7 +10,7 @@ ARG ANT_VERSION=1.10.17
 ARG JDK_8_VERSION=8.0.492-tem
 ARG JDK_21_VERSION=21.0.11-tem
 ARG GRADLE_VERSION=9.6.1
-ARG GOOVY_VERSION=2.4.0
+ARG GROOVY_VERSION=2.4.0
 ARG MAVEN_VERSION=3.9.16
 ARG KOTLIN_VERSION=2.4.0
 
@@ -76,7 +76,7 @@ ARG ANT_VERSION
 ARG JDK_8_VERSION
 ARG JDK_21_VERSION
 ARG GRADLE_VERSION
-ARG GOOVY_VERSION
+ARG GROOVY_VERSION
 ARG MAVEN_VERSION
 ARG KOTLIN_VERSION
 
@@ -101,13 +101,13 @@ RUN echo "${CONTAINER_USER} ALL=(ALL) NOPASSWD:ALL" > "/etc/sudoers.d/${CONTAINE
     export SDKMAN_DIR="/usr/local/sdkman" && curl -s "https://get.sdkman.io?ci=true&rcupdate=false" | bash && \
     . "/usr/local/sdkman/bin/sdkman-init.sh" && \
 # install JDKs and SDKs
-    sdk install java 8.0.492-tem && \
-    sdk install java 21.0.11-tem && \
-    sdk install ant 1.10.17 && \
-    sdk install gradle 9.6.1 && \
-    sdk install groovy 2.4.0 && \
-    sdk install maven 3.9.16 && \
-    sdk install kotlin 2.4.0 && \
+    sdk install java ${JDK_8_VERSION} && \
+    sdk install java ${JDK_21_VERSION} && \
+    sdk install ant ${ANT_VERSION} && \
+    sdk install gradle ${GRADLE_VERSION} && \
+    sdk install groovy ${GROOVY_VERSION} && \
+    sdk install maven ${MAVEN_VERSION} && \
+    sdk install kotlin ${KOTLIN_VERSION} && \
 # Install uv (Python package manager)
     curl -sSfL "https://astral.sh/uv/install.sh" \
       | UV_INSTALL_DIR=/usr/local/bin bash && \

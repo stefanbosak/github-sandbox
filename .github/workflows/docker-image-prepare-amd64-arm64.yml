@@ -36,8 +36,8 @@ on:
         required: false
         type: string
         default: '9.6.1'
-      GOOVY_VERSION:
-        description: 'GOOVY_VERSION'
+      GROOVY_VERSION:
+        description: 'GROOVY_VERSION'
         required: false
         type: string
         default: '2.4.0'
@@ -86,6 +86,27 @@ jobs:
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             if [[ "${{ github.event.inputs.RUNNER_CLI_VERSION }}" != "" ]]; then
               sed -i "s/RUNNER_CLI_VERSION=.*/RUNNER_CLI_VERSION=${{ github.event.inputs.RUNNER_CLI_VERSION }}/g" /tmp/github_env_tail
+            fi
+            if [[ "${{ github.event.inputs.ANT_VERSION }}" != "" ]]; then
+              sed -i "s/ANT_VERSION=.*/ANT_VERSION=${{ github.event.inputs.ANT_VERSION }}/g" /tmp/github_env_tail
+            fi
+            if [[ "${{ github.event.inputs.JDK_8_VERSION }}" != "" ]]; then
+              sed -i "s/JDK_8_VERSION=.*/JDK_8_VERSION=${{ github.event.inputs.JDK_8_VERSION }}/g" /tmp/github_env_tail
+            fi
+            if [[ "${{ github.event.inputs.JDK_21_VERSION }}" != "" ]]; then
+              sed -i "s/JDK_21_VERSION=.*/JDK_21_VERSION=${{ github.event.inputs.JDK_21_VERSION }}/g" /tmp/github_env_tail
+            fi
+            if [[ "${{ github.event.inputs.GRADLE_VERSION }}" != "" ]]; then
+              sed -i "s/GRADLE_VERSION=.*/GRADLE_VERSION=${{ github.event.inputs.GRADLE_VERSION }}/g" /tmp/github_env_tail
+            fi
+            if [[ "${{ github.event.inputs.GROOVY_VERSION }}" != "" ]]; then
+              sed -i "s/GROOVY_VERSION=.*/GROOVY_VERSION=${{ github.event.inputs.GROOVY_VERSION }}/g" /tmp/github_env_tail
+            fi
+            if [[ "${{ github.event.inputs.MAVEN_VERSION }}" != "" ]]; then
+              sed -i "s/MAVEN_VERSION=.*/MAVEN_VERSION=${{ github.event.inputs.MAVEN_VERSION }}/g" /tmp/github_env_tail
+            fi
+            if [[ "${{ github.event.inputs.KOTLIN_VERSION }}" != "" ]]; then
+              sed -i "s/KOTLIN_VERSION=.*/KOTLIN_VERSION=${{ github.event.inputs.KOTLIN_VERSION }}/g" /tmp/github_env_tail
             fi
             if [[ "${{ github.event.inputs.CONTAINER_TAG }}" != "" ]]; then
               sed -i "s/CONTAINER_TAG=.*/CONTAINER_TAG=${{ github.event.inputs.CONTAINER_TAG }}/g" >> ${GITHUB_ENV}
@@ -177,7 +198,7 @@ jobs:
             JDK_8_VERSION=${{ env.JDK_8_VERSION }}
             JDK_21_VERSION=${{ env.JDK_21_VERSION }}
             GRADLE_VERSION=${{ env.GRADLE_VERSION }}
-            GOOVY_VERSION=${{ env.GROOVY_VERSION }}
+            GROOVY_VERSION=${{ env.GROOVY_VERSION }}
             MAVEN_VERSION=${{ env.MAVEN_VERSION }}
             KOTLIN_VERSION=${{ env.KOTLIN_VERSION }}
             WORKSPACE_ROOT_DIR=${{ env.WORKSPACE_ROOT_DIR }}
