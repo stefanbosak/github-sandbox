@@ -40,7 +40,7 @@ on:
         description: 'GROOVY_VERSION'
         required: false
         type: string
-        default: '2.4.0'
+        default: '5.0.6'
       MAVEN_VERSION:
         description: 'MAVEN_VERSION'
         required: false
