@@ -3,7 +3,8 @@ Aim of this repository is to offer support for GitHub self-hosted runners operat
 
 covered tool:
 - [GitHub Actions runner](https://github.com/actions/runner)
-- [Docker in Docker for AMD64](https://www.docker.com/resources/docker-in-docker-containerized-ci-workflows-dockercon-2023/)
+- [Docker]((https://docker.com)
+- [SDKMAN](https://sdkman.io/)
 
 > [!NOTE]
 > Every script and file would be reasonable well commented and relevant details can be found there.

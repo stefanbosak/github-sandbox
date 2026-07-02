@@ -12,15 +12,52 @@ on:
   workflow_dispatch:
     inputs:
       RUNNER_CLI_VERSION:
-        description: 'RUNNER_CLI_VERSION (2.335.1)'
+        description: 'RUNNER_CLI_VERSION'
         required: false
         type: string
+        default: '2.335.1'
+      ANT_VERSION:
+        description: 'ANT_VERSION'
+        required: false
+        type: string
+        default: '1.10.17'
+      JDK_8_VERSION:
+        description: 'JDK_8_VERSION'
+        required: false
+        type: string
+        default: '8.0.492-tem'
+      JDK_21_VERSION:
+        description: 'JDK_21_VERSION'
+        required: false
+        type: string
+        default: '21.0.11-tem'
+      GRADLE_VERSION:
+        description: 'GRADLE_VERSION'
+        required: false
+        type: string
+        default: '9.6.1'
+      GOOVY_VERSION:
+        description: 'GOOVY_VERSION'
+        required: false
+        type: string
+        default: '2.4.0'
+      MAVEN_VERSION:
+        description: 'MAVEN_VERSION'
+        required: false
+        type: string
+        default: '3.9.16'
+      KOTLIN_VERSION:
+        description: 'KOTLIN_VERSION'
+        required: false
+        type: string
+        default: '2.4.0'
       CONTAINER_TAG:
-        description: 'CONTAINER_TAG (initial)'
+        description: 'CONTAINER_TAG (text)'
         required: false
         type: string
+        default: 'initial'
       SKIP_VERSION_CHANGE:
-        description: 'SKIP_VERSION_CHANGE (false)'
+        description: 'SKIP_VERSION_CHANGE'
         required: false
         type: boolean
         default: false
@@ -95,15 +132,26 @@ jobs:
           password: ${{ secrets.DH_TOKEN }}
           ecr: false
           logout: true
-      - name: 'Clean old containers'
-        if: ${{ env.CLI_VERSIONS_CHANGED == '1' || github.event.inputs.SKIP_VERSION_CHANGE == 'true' }}
+      - name: 'Check GHCR package exists'
+        id: pkg-check
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          count=$(gh api "/user/packages/container/${{ env.REPOSITORY_NAME }}/versions" --jq 'length' 2> /dev/null || echo 0)
+          echo "count=$count" >> "${GITHUB_OUTPUT}"
+      - name: 'Cleanup ${{ env.GH_REGISTRY }} registry'
+        if: steps.pkg-check.outputs.count != '0'
+        env:
+          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
         uses: actions/delete-package-versions@main
         with:
           owner: ${{ github.repository_owner }}
           package-name: ${{ env.REPOSITORY_NAME }}
           package-type: 'container'
-          token: ${{ secrets.GH_TOKEN }}
-          min-versions-to-keep: 3
+          token: ${{ secrets.GITHUB_TOKEN }}
+          delete-only-untagged-versions: 'false'
+          min-versions-to-keep: 2
       - name: 'Build multi-platforms Docker images'
         if: ${{ env.CLI_VERSIONS_CHANGED == '1' || github.event.inputs.SKIP_VERSION_CHANGE == 'true' }}
         uses: docker/build-push-action@master
@@ -125,6 +173,13 @@ jobs:
           file: ./Dockerfile
           build-args: |
             RUNNER_CLI_VERSION=${{ env.RUNNER_CLI_VERSION }}
+            ANT_VERSION=${{ env.ANT_VERSION }}
+            JDK_8_VERSION=${{ env.JDK_8_VERSION }}
+            JDK_21_VERSION=${{ env.JDK_21_VERSION }}
+            GRADLE_VERSION=${{ env.GRADLE_VERSION }}
+            GOOVY_VERSION=${{ env.GROOVY_VERSION }}
+            MAVEN_VERSION=${{ env.MAVEN_VERSION }}
+            KOTLIN_VERSION=${{ env.KOTLIN_VERSION }}
             WORKSPACE_ROOT_DIR=${{ env.WORKSPACE_ROOT_DIR }}
           push: true
           provenance: false
