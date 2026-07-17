@@ -1,0 +1,30 @@
+name: 'Example of sequential'
+
+on:
+  workflow_dispatch:
+    inputs:
+      runner_group:
+        description: 'Runner group'
+        required: true
+        default: '["Default"]'
+        type: string
+      os:
+        description: 'Runner label'
+        required: true
+        default: '["self-hosted"]'
+        type: string
+
+jobs:
+  # running simple job on one runner
+  sequencial-job:
+    runs-on:
+      group: ${{ matrix.runner_group }}
+      labels: ${{ matrix.os }}
+    strategy:
+      matrix:
+        runner_group: ${{ fromJson(inputs.runner_group) }}
+        os: ${{ fromJson(inputs.os) }}
+    steps:
+      - name: 'Run task'
+        shell: bash
+        run: echo "Running arch=$(uname -m) runner_name=${{ runner.name }} on hostname=$(hostname) !"

@@ -1,0 +1,40 @@
+name: 'Example for Linux'
+
+on:
+  workflow_dispatch:
+    inputs:
+      os:
+        description: 'Runner label'
+        required: true
+        default: '["X64","ARM64"]'
+        type: string
+
+jobs:
+  test:
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        runner: ${{ fromJson(inputs.os) }}
+
+    steps:
+      - name: 'Run task'
+        shell: bash
+        run: echo "Running arch=$(uname -m) runner_name=${{ runner.name }} on hostname=$(hostname)."
+      - name: 'Start docker'
+        shell: bash
+        run: |
+          if [ ! -z "$(which docker)" ]; then
+            sudo /etc/init.d/docker restart
+            /etc/init.d/docker status
+            docker system info
+          else
+            echo "Docker is not present"
+          fi
+      - name: 'Run docker container'
+        shell: bash
+        run: |
+          if [ ! -z "$(which docker)" ]; then
+            docker container run --rm hello-world
+          else
+            echo "Docker is not present"
+          fi

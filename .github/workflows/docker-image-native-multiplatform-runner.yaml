@@ -1,0 +1,678 @@
+name: 'Native: prepare → build → merge → test → scan'
+run-name: 'Native: ${{ github.ref_type }}_${{ github.ref_name }}@${{ github.triggering_actor }}'
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+on:
+  repository_dispatch:
+    types: [new-release]
+  workflow_dispatch:
+    inputs:
+      RUNNER_CLI_VERSION:
+        description: 'RUNNER_CLI_VERSION'
+        required: false
+        type: string
+        default: '2.335.1'
+      ANT_VERSION:
+        description: 'ANT_VERSION'
+        required: false
+        type: string
+        default: '1.10.17'
+      GRADLE_VERSION:
+        description: 'GRADLE_VERSION'
+        required: false
+        type: string
+        default: '9.6.1'
+      GROOVY_VERSION:
+        description: 'GROOVY_VERSION'
+        required: false
+        type: string
+        default: '5.0.7'
+      JDK_8_VERSION:
+        description: 'JDK_8_VERSION'
+        required: false
+        type: string
+        default: '8.0.492-tem'
+      JDK_21_VERSION:
+        description: 'JDK_21_VERSION'
+        required: false
+        type: string
+        default: '21.0.11-tem'
+      KOTLIN_VERSION:
+        description: 'KOTLIN_VERSION'
+        required: false
+        type: string
+        default: '2.4.10'
+      MAVEN_VERSION:
+        description: 'MAVEN_VERSION'
+        required: false
+        type: string
+        default: '3.9.16'
+      CONTAINER_TAG:
+        description: 'CONTAINER_TAG'
+        required: false
+        type: string
+        default: 'initial'
+
+env:
+  GH_REGISTRY: ghcr.io
+  DH_REGISTRY: docker.io
+  DHI_REGISTRY: dhi.io
+  CONTAINER_TAG: initial
+
+jobs:
+  prepare:
+    name: 'Preparation, cleanup'
+    runs-on: ubuntu-slim
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      REPOSITORY_NAME: ${{ steps.params.outputs.REPOSITORY_NAME }}
+      REPOSITORY_DESCRIPTION: ${{ steps.params.outputs.REPOSITORY_DESCRIPTION }}
+      CONTAINER_TAG: ${{ steps.params.outputs.CONTAINER_TAG }}
+      TIMESTAMP: ${{ steps.params.outputs.TIMESTAMP }}
+      RUNNER_CLI_RELEASE_VERSION: ${{ steps.params.outputs.RUNNER_CLI_RELEASE_VERSION }}
+      ANT_RELEASE_VERSION: ${{ steps.params.outputs.ANT_RELEASE_VERSION }}
+      GRADLE_RELEASE_VERSION: ${{ steps.params.outputs.GRADLE_RELEASE_VERSION }}
+      GROOVY_RELEASE_VERSION: ${{ steps.params.outputs.GROOVY_RELEASE_VERSION }}
+      JDK_8_RELEASE_VERSION: ${{ steps.params.outputs.JDK_8_RELEASE_VERSION }}
+      JDK_21_RELEASE_VERSION: ${{ steps.params.outputs.JDK_21_RELEASE_VERSION }}
+      KOTLIN_RELEASE_VERSION: ${{ steps.params.outputs.KOTLIN_RELEASE_VERSION }}
+      MAVEN_RELEASE_VERSION: ${{ steps.params.outputs.MAVEN_RELEASE_VERSION }}
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@main
+
+      - name: 'Get repository description'
+        id: repo
+        uses: stefanbosak/gh-actions/get-repo-description@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 'Set tools versions to GITHUB_ENV and GITHUB_OUTPUT'
+        id: params
+        env:
+          CHANGES_JSON: ${{ toJson(github.event.client_payload.changes) }}
+        run: |
+          CONTAINER_TAG="${{ env.CONTAINER_TAG }}"
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            RUNNER_CLI_RELEASE_VERSION="${{ github.event.inputs.RUNNER_CLI_VERSION }}"
+            ANT_RELEASE_RELEASE_VERSION="${{ github.event.inputs.ANT_VERSION }}"
+            GRADLE_RELEASE_VERSION="${{ github.event.inputs.GRADLE_VERSION }}"
+            GROOVY_RELEASE_VERSION="${{ github.event.inputs.GROOVY_VERSION }}"
+            JDK_8_RELEASE_VERSION="${{ github.event.inputs.JDK_8_VERSION }}"
+            JDK_21_RELEASE_VERSION="${{ github.event.inputs.JDK_21_VERSION }}"
+            KOTLIN_RELEASE_VERSION="${{ github.event.inputs.KOTLIN_VERSION }}"
+            MAVEN_RELEASE_VERSION="${{ github.event.inputs.MAVEN_VERSION }}"
+            CONTAINER_TAG="${{ github.event.inputs.CONTAINER_TAG }}"
+          fi
+          REPOSITORY_NAME="$(echo '${{ github.repository }}' | cut -d'/' -f2)"
+          REPOSITORY_DESCRIPTION="${{ steps.repo.outputs.description }}"
+          echo "WORKSPACE_ROOT_DIR=${{ github.workspace }}/workspace" >> ${GITHUB_ENV}
+          echo "REPOSITORY_NAME=${REPOSITORY_NAME}" >> ${GITHUB_ENV}
+          echo "REPOSITORY_DESCRIPTION=${REPOSITORY_DESCRIPTION}" >> ${GITHUB_ENV}
+          TIMESTAMP="$(git log -1 --format=%cI)"
+          echo "TIMESTAMP=${TIMESTAMP}" >> ${GITHUB_ENV}
+          if [[ "${{ github.event_name }}" == "repository_dispatch" ]]; then
+            RUNNER_CLI_RELEASE_VERSION=$(echo "${CHANGES_JSON}" | jq -r '.[] | select(.repo == "runner") | .tag')
+            ANT_RELEASE_VERSION=$(curl -s "https://api.sdkman.io/2/candidates/ant/linuxx64/versions/all" | sed 's/,/\n/g' | sort -V | tail -n 1)
+            GRADLE_RELEASE_VERSION=$(curl -s "https://api.sdkman.io/2/candidates/gradle/linuxx64/versions/all" | sed 's/,/\n/g' | grep -v rc | sort -V | tail -n 1)
+            GROOVY_RELEASE_VERSION=$(curl -s "https://api.sdkman.io/2/candidates/groovy/linuxx64/versions/all" | sed 's/,/\n/g' | grep -v alpha | sort -V | tail -n 1)
+            JDK_8_RELEASE_VERSION=$(curl -s "https://api.sdkman.io/2/candidates/java/linuxx64/versions/all" | sed 's/,/\n/g' | grep '\-tem' | grep '^8' | sort -V | tail -n 1)
+            JDK_21_RELEASE_VERSION=$(curl -s "https://api.sdkman.io/2/candidates/java/linuxx64/versions/all" | sed 's/,/\n/g' | grep '\-tem' | grep '^21' | sort -V | tail -n 1)
+            KOTLIN_RELEASE_VERSION=$(curl -s "https://api.sdkman.io/2/candidates/kotlin/linuxx64/versions/all" | sed 's/,/\n/g' | sort -V | tail -n 1)
+            MAVEN_RELEASE_VERSION=$(curl -s "https://api.sdkman.io/2/candidates/maven/linuxx64/versions/all" | sed 's/,/\n/g' | grep -v rc | sort -V | tail -n 1)
+          fi
+          echo "GITHUB_ENV:"
+          cat ${GITHUB_ENV}
+          echo "CONTAINER_TAG=${CONTAINER_TAG}" >> ${GITHUB_OUTPUT}
+          echo "REPOSITORY_NAME=${REPOSITORY_NAME}" >> ${GITHUB_OUTPUT}
+          echo "REPOSITORY_DESCRIPTION=${REPOSITORY_DESCRIPTION}" >> ${GITHUB_OUTPUT}
+          echo "TIMESTAMP=${TIMESTAMP}" >> ${GITHUB_OUTPUT}
+          echo "RUNNER_CLI_RELEASE_VERSION=${RUNNER_CLI_RELEASE_VERSION#v}" >> ${GITHUB_OUTPUT}
+          echo "ANT_RELEASE_VERSION=${ANT_RELEASE_VERSION}" >> ${GITHUB_OUTPUT}
+          echo "GRADLE_RELEASE_VERSION=${GRADLE_RELEASE_VERSION}" >> ${GITHUB_OUTPUT}
+          echo "GROOVY_RELEASE_VERSION=${GROOVY_RELEASE_VERSION}" >> ${GITHUB_OUTPUT}
+          echo "JDK_8_RELEASE_VERSION=${JDK_8_RELEASE_VERSION}" >> ${GITHUB_OUTPUT}
+          echo "JDK_21_RELEASE_VERSION=${JDK_21_RELEASE_VERSION}" >> ${GITHUB_OUTPUT}
+          echo "KOTLIN_RELEASE_VERSION=${KOTLIN_RELEASE_VERSION}" >> ${GITHUB_OUTPUT}
+          echo "MAVEN_RELEASE_VERSION=${MAVEN_RELEASE_VERSION}" >> ${GITHUB_OUTPUT}
+          echo "GITHUB_OUTPUT:"
+          cat ${GITHUB_OUTPUT}
+
+      - name: 'Check GHCR package exists'
+        id: pkg-check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          count=$(gh api "/user/packages/container/${{ env.REPOSITORY_NAME }}/versions" --jq 'length' 2> /dev/null || echo 0)
+          echo "count=$count" >> "${GITHUB_OUTPUT}"
+
+      - name: 'Cleanup ${{ env.GH_REGISTRY }} registry'
+        if: steps.pkg-check.outputs.count != '0'
+        uses: actions/delete-package-versions@main
+        env:
+          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+        with:
+          owner: ${{ github.repository_owner }}
+          package-name: ${{ env.REPOSITORY_NAME }}
+          package-type: 'container'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          delete-only-untagged-versions: 'false'
+          min-versions-to-keep: 5
+
+      - name: 'Cleanup ${{ env.DH_REGISTRY }} registry'
+        uses: stefanbosak/gh-actions/cleanup-dockerhub-old-digests@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: ${{ github.run_id }}
+          ref-name: ${{ github.ref_name }}
+          dh-user: ${{ secrets.DH_USER }}
+          dh-token: ${{ secrets.DH_TOKEN }}
+          repository-name: ${{ env.REPOSITORY_NAME }}
+
+  build:
+    name: 'Build image (${{ matrix.platform_pair }})'
+    needs: [prepare]
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-26.04
+            platform: linux/amd64
+            platform_pair: linux-amd64
+          - runner: ubuntu-26.04-arm
+            platform: linux/arm64
+            platform_pair: linux-arm64
+    permissions:
+      contents: write
+      packages: write
+    env:
+      RUNNER_CLI_VERSION: ${{ needs.prepare.outputs.RUNNER_CLI_VERSION }}
+      ANT_VERSION: ${{ needs.prepare.outputs.ANT_VERSION }}
+      GRADLE_VERSION: ${{ needs.prepare.outputs.GRADLE_VERSION }}
+      GROOVY_VERSION: ${{ needs.prepare.outputs.GROOVY_VERSION }}
+      JDK_8_VERSION: ${{ needs.prepare.outputs.JDK_8_VERSION }}
+      JDK_21_VERSION: ${{ needs.prepare.outputs.JDK_21_VERSION }}
+      KOTLIN_VERSION: ${{ needs.prepare.outputs.KOTLIN_VERSION }}
+      MAVEN_VERSION: ${{ needs.prepare.outputs.MAVEN_VERSION }}
+      WORKSPACE_ROOT_DIR: ${{ needs.prepare.outputs.WORKSPACE_ROOT_DIR }}
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@main
+
+      - name: 'Set up Docker buildx'
+        uses: docker/setup-buildx-action@master
+        with:
+          version: latest
+          driver-opts: |
+            network=host
+            image=moby/buildkit:master
+
+      - name: 'Login to ${{ env.GH_REGISTRY }}'
+        uses: docker/login-action@master
+        with:
+          registry: ${{ env.GH_REGISTRY }}
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          ecr: false
+          logout: true
+
+      - name: 'Login to ${{ env.DH_REGISTRY }}'
+        uses: docker/login-action@master
+        with:
+          registry: ${{ env.DH_REGISTRY }}
+          username: ${{ secrets.DH_USER }}
+          password: ${{ secrets.DH_TOKEN }}
+          ecr: false
+          logout: true
+
+      - name: 'Login to ${{ env.DHI_REGISTRY }}'
+        uses: docker/login-action@master
+        with:
+          registry: ${{ env.DHI_REGISTRY }}
+          username: ${{ secrets.DH_USER }}
+          password: ${{ secrets.DH_TOKEN }}
+          ecr: false
+          logout: true
+
+      - name: 'Build, push image (no tag)'
+        id: build
+        uses: docker/build-push-action@master
+        with:
+          context: .
+          file: ./Dockerfile
+          build-args: |
+            RUNNER_CLI_VERSION=${{ needs.prepare.outputs.RUNNER_CLI_RELEASE_VERSION }}
+            ANT_VERSION=${{ needs.prepare.outputs.ANT_RELEASE_VERSION }}
+            GRADLE_VERSION=${{ needs.prepare.outputs.GRADLE_RELEASE_VERSION }}
+            GROOVY_VERSION=${{ needs.prepare.outputs.GROOVY_RELEASE_VERSION }}
+            JDK_8_VERSION=${{ needs.prepare.outputs.JDK_8_RELEASE_VERSION }}
+            JDK_21_VERSION=${{ needs.prepare.outputs.JDK_21_RELEASE_VERSION }}
+            KOTLIN_VERSION=${{ needs.prepare.outputs.KOTLIN_RELEASE_VERSION }}
+            MAVEN_VERSION=${{ needs.prepare.outputs.MAVEN_RELEASE_VERSION }}
+          push: true
+          provenance: false
+          no-cache: false
+          cache-from: type=registry,ref=${{ env.GH_REGISTRY }}/${{ github.repository }}-cache:build-${{ matrix.platform_pair }}
+          cache-to: type=registry,ref=${{ env.GH_REGISTRY }}/${{ github.repository }}-cache:build-${{ matrix.platform_pair }},mode=max
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          secrets: |
+            GIT_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }}
+          labels: |
+            org.opencontainers.image.created=${{ needs.prepare.outputs.TIMESTAMP }}
+            org.opencontainers.image.description=${{ needs.prepare.outputs.REPOSITORY_DESCRIPTION }}
+            org.opencontainers.image.authors=${{ github.repository_owner }}
+            org.opencontainers.image.url=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          platforms: ${{ matrix.platform }}
+          outputs: |
+            type=image,name=${{ env.GH_REGISTRY }}/${{ github.repository }},push-by-digest=true,name-canonical=true,push=true,compression=gzip,compression-level=3,force-compression=true
+            type=image,name=${{ env.DH_REGISTRY }}/${{ secrets.DH_USER }}/${{ needs.prepare.outputs.REPOSITORY_NAME }},push-by-digest=true,name-canonical=true,push=true,compression=gzip,compression-level=3,force-compression=true
+
+      - name: 'Export digest to artifact'
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
+
+      - name: 'Upload digest artifact'
+        uses: actions/upload-artifact@main
+        with:
+          name: digests-${{ matrix.platform_pair }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  merge:
+    name: 'Merge multi-platform manifests'
+    needs: [prepare, build]
+    runs-on: ubuntu-26.04-arm
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - name: 'Download all digest artifacts'
+        uses: actions/download-artifact@main
+        with:
+          path: /tmp/digests
+          pattern: digests-*
+          merge-multiple: true
+
+      - name: 'Install cosign'
+        uses: sigstore/cosign-installer@main
+
+      - name: 'Login to ${{ env.GH_REGISTRY }}'
+        uses: docker/login-action@master
+        with:
+          registry: ${{ env.GH_REGISTRY }}
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          ecr: false
+          logout: true
+
+      - name: 'Login to ${{ env.DH_REGISTRY }}'
+        uses: docker/login-action@master
+        with:
+          registry: ${{ env.DH_REGISTRY }}
+          username: ${{ secrets.DH_USER }}
+          password: ${{ secrets.DH_TOKEN }}
+          ecr: false
+          logout: true
+
+      - name: 'Store multi-platform image in ${{ env.GH_REGISTRY }}'
+        run: |
+          docker buildx imagetools create \
+            -t ${{ env.GH_REGISTRY }}/${{ github.repository }}:${{ needs.prepare.outputs.CONTAINER_TAG }} \
+            $(printf '${{ env.GH_REGISTRY }}/${{ github.repository }}@sha256:%s ' $(ls /tmp/digests))
+
+      - name: 'Sign multi-platform image index (${{ env.GH_REGISTRY }})'
+        run: |
+          IMAGE="${{ env.GH_REGISTRY }}/${{ github.repository }}:${{ needs.prepare.outputs.CONTAINER_TAG }}"
+          DIGEST=$(docker buildx imagetools inspect "${IMAGE}" --format '{{json .}}' | jq -r '.manifest.digest')
+          cosign sign --yes "${IMAGE}@${DIGEST}"
+
+      - name: 'Store multi-platform image in ${{ env.DH_REGISTRY }}'
+        run: |
+          docker buildx imagetools create \
+            -t ${{ env.DH_REGISTRY }}/${{ secrets.DH_USER }}/${{ needs.prepare.outputs.REPOSITORY_NAME }}:${{ needs.prepare.outputs.CONTAINER_TAG }} \
+            $(printf '${{ env.DH_REGISTRY }}/${{ secrets.DH_USER }}/${{ needs.prepare.outputs.REPOSITORY_NAME }}@sha256:%s ' $(ls /tmp/digests))
+
+      - name: 'Extract all stored digests'
+        run: |
+          JSON=$(docker buildx imagetools inspect ${{ env.GH_REGISTRY }}/${{ github.repository }}:${{ needs.prepare.outputs.CONTAINER_TAG }} --format '{{json .}}')
+
+          ALL_DIGESTS=$(echo "${JSON}" | jq -r '
+            [
+              .manifest.digest,
+
+              (
+                .manifest.manifests[]
+                | select(.mediaType == "application/vnd.docker.distribution.manifest.v2+json")
+                | .digest
+              )
+            ]
+            | join(" ")
+          ')
+
+          echo "${ALL_DIGESTS}" > /tmp/digests-all.txt
+
+      - name: 'Upload extracted digests as artifact'
+        uses: actions/upload-artifact@main
+        with:
+          name: digests-all
+          path: /tmp/digests-all.txt
+          if-no-files-found: error
+          retention-days: 7
+
+  test:
+    name: 'Test image (${{ matrix.platform_pair }})'
+    needs: [prepare, build, merge]
+    if: success()
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-26.04
+            platform: linux/amd64
+            platform_pair: linux-amd64
+          - runner: ubuntu-26.04-arm
+            platform: linux/arm64
+            platform_pair: linux-arm64
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - name: 'Install cosign'
+        uses: sigstore/cosign-installer@main
+
+      - name: 'Verify image signature (${{ env.GH_REGISTRY }})'
+        run: |
+          IMAGE="${{ env.GH_REGISTRY }}/${{ github.repository }}:${{ needs.prepare.outputs.CONTAINER_TAG }}"
+          DIGEST=$(docker buildx imagetools inspect "${IMAGE}" --format '{{json .}}' | jq -r '.manifest.digest')
+          cosign verify \
+            --certificate-identity-regexp="https://github\.com/${{ github.repository }}/\.github/workflows/.*" \
+            --certificate-oidc-issuer="https://token.actions.githubusercontent.com" \
+            "${IMAGE}@${DIGEST}"
+
+      - name: 'Run tests in Docker container'
+        id: test
+        env:
+          RUNNER_CLI_RELEASE_VERSION: ${{ needs.prepare.outputs.RUNNER_CLI_RELEASE_VERSION }}
+          ANT_RELEASE_VERSION: ${{ needs.prepare.outputs.ANT_RELEASE_VERSION }}
+          GRADLE_RELEASE_VERSION: ${{ needs.prepare.outputs.GRADLE_RELEASE_VERSION }}
+          GROOVY_RELEASE_VERSION: ${{ needs.prepare.outputs.GROOVY_RELEASE_VERSION }}
+          JDK_21_RELEASE_VERSION: ${{ needs.prepare.outputs.JDK_21_RELEASE_VERSION }}
+          KOTLIN_RELEASE_VERSION: ${{ needs.prepare.outputs.KOTLIN_RELEASE_VERSION }}
+          MAVEN_RELEASE_VERSION: ${{ needs.prepare.outputs.MAVEN_RELEASE_VERSION }}
+        run: |
+          FAILED=0
+          IMAGE="${{ env.GH_REGISTRY }}/${{ github.repository }}:${{ needs.prepare.outputs.CONTAINER_TAG }}"
+
+          compare() {
+            local name="$1" actual="${2#v}" expected="${3#v}"
+            if [[ -z "${expected}" ]]; then
+              echo "SKIP: ${name} (no expected version provided)"
+              return
+            fi
+            if [[ "${actual}" == "${expected}" ]]; then
+              echo "PASS: ${name}: ${actual} == ${expected}"
+            else
+              echo "FAIL: ${name}: got '${actual}', expected '${expected}'"
+              FAILED=1
+            fi
+          }
+
+          RUNNER_CLI_VERSION=$(docker run --rm \
+            --entrypoint="" \
+            "${IMAGE}" \
+            sh -c '/home/user/actions-runner/bin/Runner.Listener --version')
+
+          SDK_CURRENT=$(docker run --rm \
+            --entrypoint="" \
+            "${IMAGE}" \
+            bash -c "export SDKMAN_DIR='/usr/local/sdkman' && source /usr/local/sdkman/bin/sdkman-init.sh && sdk current | awk 'NR>1 {gsub(\":\",\"\",\$1); print toupper(\$1)\"_VERSION=\" \$2}'")
+
+          echo "--- SDKMAN candidate versions ---"
+          echo "${SDK_CURRENT}"
+
+          while IFS='=' read -r sdk_key sdk_value; do
+            case "${sdk_key}" in
+              ANT_VERSION|GRADLE_VERSION|GROOVY_VERSION|JAVA_VERSION|KOTLIN_VERSION|MAVEN_VERSION)
+                declare "${sdk_key}=${sdk_value}"
+                ;;
+            esac
+          done <<< "${SDK_CURRENT}"
+
+          echo "--- Version comparison ---"
+          compare "RUNNER_CLI_VERSION" "${RUNNER_CLI_VERSION}" "${RUNNER_CLI_RELEASE_VERSION}"
+          compare "ANT_VERSION" "${ANT_VERSION}" "${ANT_RELEASE_VERSION}"
+          compare "GRADLE_VERSION" "${GRADLE_VERSION}" "${GRADLE_RELEASE_VERSION}"
+          compare "GROOVY_VERSION" "${GROOVY_VERSION}" "${GROOVY_RELEASE_VERSION}"
+          compare "JAVA_VERSION" "${JAVA_VERSION}" "${JDK_21_RELEASE_VERSION}"
+          compare "KOTLIN_VERSION" "${KOTLIN_VERSION}" "${KOTLIN_RELEASE_VERSION}"
+          compare "MAVEN_VERSION" "${MAVEN_VERSION}" "${MAVEN_RELEASE_VERSION}"
+
+          if [[ ${FAILED} -ne 0 ]]; then
+            echo "One or more version checks failed!"
+            exit 1
+          fi
+
+  scan:
+    name: 'Scan image (${{ matrix.platform_pair }})'
+    needs: [prepare, build, merge]
+    if: success()
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-26.04
+            platform: linux/amd64
+            platform_pair: linux-amd64
+          - runner: ubuntu-26.04-arm
+            platform: linux/arm64
+            platform_pair: linux-arm64
+    permissions:
+      contents: read
+      packages: read
+      security-events: write
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@main
+
+      - name: 'Install cosign'
+        uses: sigstore/cosign-installer@main
+
+      - name: 'Verify image signature (${{ env.GH_REGISTRY }})'
+        run: |
+          IMAGE="${{ env.GH_REGISTRY }}/${{ github.repository }}:${{ needs.prepare.outputs.CONTAINER_TAG }}"
+          DIGEST=$(docker buildx imagetools inspect "${IMAGE}" --format '{{json .}}' | jq -r '.manifest.digest')
+          cosign verify \
+            --certificate-identity-regexp="https://github\.com/${{ github.repository }}/\.github/workflows/.*" \
+            --certificate-oidc-issuer="https://token.actions.githubusercontent.com" \
+            "${IMAGE}@${DIGEST}"
+
+      - name: 'Run Trivy scan (${{ matrix.platform_pair }})'
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: '${{ env.GH_REGISTRY }}/${{ github.repository }}:${{ needs.prepare.outputs.CONTAINER_TAG }}'
+          format: 'json'
+          scanners: 'vuln,secret,config'
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH,MEDIUM,LOW'
+          ignore-unfixed: 'false'
+          exit-code: '0'
+          version: 'latest'
+          list-all-pkgs: 'true'
+          output: scan-report-${{ matrix.platform_pair }}.json
+
+      - name: 'Run Trivy misconfig scan (${{ matrix.platform_pair }})'
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'config'
+          scan-ref: '.'
+          format: 'json'
+          scanners: 'misconfig'
+          severity: 'CRITICAL,HIGH,MEDIUM,LOW'
+          exit-code: '0'
+          version: 'latest'
+          output: misconfig-report-${{ matrix.platform_pair }}.json
+
+      - name: 'Store scan report as artifact (${{ matrix.platform_pair }})'
+        if: always()
+        uses: actions/upload-artifact@main
+        with:
+          name: scan-report-${{ matrix.platform_pair }}
+          path: scan-report-${{ matrix.platform_pair }}.json
+          retention-days: 7
+          overwrite: true
+          compression-level: 0
+
+      - name: 'Store misconfig report as artifact (${{ matrix.platform_pair }})'
+        if: always()
+        uses: actions/upload-artifact@main
+        with:
+          name: misconfig-report-${{ matrix.platform_pair }}
+          path: misconfig-report-${{ matrix.platform_pair }}.json
+          retention-days: 7
+          overwrite: true
+          compression-level: 0
+
+      - name: 'Convert scan report to SARIF (${{ matrix.platform_pair }})'
+        if: always()
+        run: |
+          trivy convert \
+            --format sarif \
+            --output scan-report-${{ matrix.platform_pair }}.sarif \
+            scan-report-${{ matrix.platform_pair }}.json
+
+      - name: 'Convert misconfig report to SARIF (${{ matrix.platform_pair }})'
+        if: always()
+        run: |
+          trivy convert \
+            --format sarif \
+            --output misconfig-report-${{ matrix.platform_pair }}.sarif \
+            misconfig-report-${{ matrix.platform_pair }}.json
+
+      - name: 'Upload SARIF scan report to GitHub Security tab (${{ matrix.platform_pair }})'
+        if: always()
+        uses: github/codeql-action/upload-sarif@main
+        with:
+          category: trivy-${{ matrix.platform_pair }}
+          sarif_file: scan-report-${{ matrix.platform_pair }}.sarif
+
+      - name: 'Upload SARIF misconfig report to GitHub Security tab (${{ matrix.platform_pair }})'
+        if: always()
+        uses: github/codeql-action/upload-sarif@main
+        with:
+          category: trivy-misconfig-${{ matrix.platform_pair }}
+          sarif_file: misconfig-report-${{ matrix.platform_pair }}.sarif
+
+  update-readme:
+    name: 'Update version information'
+    needs: [prepare, build, merge, test]
+    if: success() && github.event_name == 'repository_dispatch'
+    runs-on: ubuntu-slim
+    permissions:
+      contents: write
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@main
+
+      - name: 'Prepare version information'
+        env:
+          TIMESTAMP: ${{ needs.prepare.outputs.TIMESTAMP }}
+          RUNNER_CLI_RELEASE_VERSION: ${{ needs.prepare.outputs.RUNNER_CLI_RELEASE_VERSION }}
+          ANT_RELEASE_VERSION: ${{ needs.prepare.outputs.ANT_RELEASE_VERSION }}
+          GRADLE_RELEASE_VERSION: ${{ needs.prepare.outputs.GRADLE_RELEASE_VERSION }}
+          GROOVY_RELEASE_VERSION: ${{ needs.prepare.outputs.GROOVY_RELEASE_VERSION }}
+          JDK_RELEASE_VERSION: ${{ needs.prepare.outputs.JDK_21_RELEASE_VERSION }}
+          KOTLIN_RELEASE_VERSION: ${{ needs.prepare.outputs.KOTLIN_RELEASE_VERSION }}
+          MAVEN_RELEASE_VERSION: ${{ needs.prepare.outputs.MAVEN_RELEASE_VERSION }}
+          RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          python3 << 'PYEOF'
+          import re, os
+          updated_at = os.environ['TIMESTAMP']
+          run_url = os.environ['RUN_URL']
+          run_number = os.environ['RUN_NUMBER']
+          tools = [
+              ('Runner', os.environ['RUNNER_CLI_RELEASE_VERSION'],         'https://github.com/actions/runner/releases/tag/v'       + os.environ['RUNNER_CLI_RELEASE_VERSION']),
+              ('Ant',    os.environ['ANT_RELEASE_VERSION'],                'https://github.com/apache/ant/releases/tag/rel/'        + os.environ['ANT_RELEASE_VERSION']),
+              ('Gradle', os.environ['GRADLE_RELEASE_VERSION'],             'https://github.com/gradle/gradle/releases/tag/v'        + os.environ['GRADLE_RELEASE_VERSION']),
+              ('Groovy', os.environ['GROOVY_RELEASE_VERSION'],             'https://github.com/apache/groovy/releases/tag/GROOVY_'  + os.environ['GROOVY_RELEASE_VERSION'].replace('.', '_')),
+              ('JDK',    os.environ['JDK_RELEASE_VERSION'],                'https://sdkman.io/jdks'),
+              ('Kotlin', os.environ['KOTLIN_RELEASE_VERSION'],             'https://github.com/JetBrains/kotlin/releases/tag/v'     + os.environ['KOTLIN_RELEASE_VERSION']),
+              ('Maven',  os.environ['MAVEN_RELEASE_VERSION'],              'https://github.com/apache/maven/releases/tag/maven-'    + os.environ['MAVEN_RELEASE_VERSION'])
+          ]
+          rows = '\n'.join(f'| **{name}** | [`{ver}`]({url}) |' for name, ver, url in tools)
+          new_section = (
+              "<!-- VERSION_INFO_START -->\n"
+              "| Component | Version |\n"
+              "|-----------|---------|\n"
+              f"{rows}\n"
+              "\n"
+              f"> 🔄 Last updated: {updated_at} · [Build #{run_number}]({run_url})\n"
+              "<!-- VERSION_INFO_END -->"
+          )
+          with open('README.md', 'r') as f:
+              content = f.read()
+          pattern = r'<!-- VERSION_INFO_START -->.*?<!-- VERSION_INFO_END -->'
+          new_content = re.sub(pattern, new_section, content, flags=re.DOTALL)
+          with open('README.md', 'w') as f:
+              f.write(new_content)
+          print('README.md updated successfully')
+          var_defaults = {
+              'RUNNER_CLI_VERSION': os.environ['RUNNER_CLI_RELEASE_VERSION'],
+              'ANT_VERSION': os.environ['ANT_RELEASE_VERSION'],
+              'GRADLE_VERSION': os.environ['GRADLE_RELEASE_VERSION'],
+              'GROOVY_VERSION': os.environ['GROOVY_RELEASE_VERSION'],
+              'JDK_21_VERSION': os.environ['JDK_RELEASE_VERSION'],
+              'KOTLIN_VERSION': os.environ['KOTLIN_RELEASE_VERSION'],
+              'MAVEN_VERSION': os.environ['MAVEN_RELEASE_VERSION']
+          }
+          pipeline_files = [
+              '.github/workflows/docker-image-native-multiplatform-runner.yaml'
+          ]
+          for pf in pipeline_files:
+              with open(pf, 'r') as f:
+                  pf_content = f.read()
+              for var_name, version in var_defaults.items():
+                  if not version:
+                      continue
+                  pat = re.compile(
+                      rf'([ \t]+{re.escape(var_name)}:\n(?:[ \t]+\S[^\n]*\n)*?[ \t]+type:[ \t]*string\n)'
+                      r'([ \t]+default:[^\n]*\n)?'
+                  )
+                  def repl(m, ver=version):
+                      block = m.group(1)
+                      ind = re.search(r'^([ \t]+)type:', block, re.MULTILINE).group(1)
+                      return block + f"{ind}default: '{ver}'\n"
+                  pf_content = pat.sub(repl, pf_content)
+              with open(pf, 'w') as f:
+                  f.write(pf_content)
+              print(f'{pf} updated successfully')
+          PYEOF
+
+      - name: 'Store version information'
+        uses: stefanbosak/gh-actions/signed-verified-commit@main
+        with:
+          github-token: ${{ secrets.GH_TOKEN }}
+          signed-off: 'true'
+          commit-message: 'chore: update version information'
+          files: |
+            README.md
+            .github/workflows/docker-image-native-multiplatform-runner.yaml
