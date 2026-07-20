@@ -18,7 +18,7 @@ on:
         description: 'RUNNER_CLI_VERSION'
         required: false
         type: string
-        default: '2.335.1'
+        default: '2.336.0'
       ANT_VERSION:
         description: 'ANT_VERSION'
         required: false

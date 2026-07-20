@@ -15,7 +15,7 @@
 <!-- VERSION_INFO_START -->
 | Component | Version |
 |-----------|---------|
-| **Runner** | [`2.335.1`](https://github.com/actions/runner/releases/tag/v2.335.1) |
+| **Runner** | [`2.336.0`](https://github.com/actions/runner/releases/tag/v2.336.0) |
 | **Ant** | [`1.10.17`](https://github.com/apache/ant/releases/tag/rel/1.10.17) |
 | **Gradle** | [`9.6.1`](https://github.com/gradle/gradle/releases/tag/v9.6.1) |
 | **Groovy** | [`5.0.7`](https://github.com/apache/groovy/releases/tag/GROOVY_5_0_7) |
@@ -23,7 +23,7 @@
 | **Kotlin** | [`2.4.10`](https://github.com/JetBrains/kotlin/releases/tag/v2.4.10) |
 | **Maven** | [`3.9.16`](https://github.com/apache/maven/releases/tag/maven-3.9.16) |
 
-> 🔄 Last updated: 2026-07-20T13:37:52+02:00 · [Build #25](https://github.com/stefanbosak/github-sandbox/actions/runs/29740507101)
+> 🔄 Last updated: 2026-07-20T14:03:59+02:00 · [Build #26](https://github.com/stefanbosak/github-sandbox/actions/runs/29769778436)
 <!-- VERSION_INFO_END -->
 
 ---
