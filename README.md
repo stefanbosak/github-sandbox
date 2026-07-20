@@ -23,7 +23,7 @@
 | **Kotlin** | [`2.4.10`](https://github.com/JetBrains/kotlin/releases/tag/v2.4.10) |
 | **Maven** | [`3.9.16`](https://github.com/apache/maven/releases/tag/maven-3.9.16) |
 
-> 🔄 Last updated: 2026-07-17T21:41:50+02:00 · [Build #20](https://github.com/stefanbosak/github-sandbox/actions/runs/29614608177)
+> 🔄 Last updated: 2026-07-17T23:27:31+02:00 · [Build #22](https://github.com/stefanbosak/github-sandbox/actions/runs/29711116950)
 <!-- VERSION_INFO_END -->
 
 ---
