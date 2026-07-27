@@ -43,7 +43,7 @@ on:
         description: 'JDK_21_VERSION'
         required: false
         type: string
-        default: '21.0.11-tem'
+        default: '21.0.12-tem'
       KOTLIN_VERSION:
         description: 'KOTLIN_VERSION'
         required: false
