@@ -90,6 +90,9 @@ covered tools:
 - [![build_status_badge](../../actions/workflows/example-selfhosted-parallel-job.yaml/badge.svg?branch=main)](.github/workflows/example-selfhosted-parallel-job.yaml) self-hosted parallel job
 - [![build_status_badge](../../actions/workflows/example-selfhosted-sequential-job.yaml/badge.svg?branch=main)](.github/workflows/example-selfhosted-sequential-job.yaml) self-hosted sequential job
 
+## Other resources
+- [JDK comparison](https://jdkcomparison.com/)
+- [Java SE support roadmap](https://www.oracle.com/java/technologies/java-se-support-roadmap.html)
 <div align="center">
 
 <span style="color: #8250df;">**Made with ❤ for ☁ GitHub ecosystem and 🔒 security**</span>
