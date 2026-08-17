@@ -18,12 +18,12 @@
 | **Runner** | [`2.336.0`](https://github.com/actions/runner/releases/tag/v2.336.0) |
 | **Ant** | [`1.10.17`](https://github.com/apache/ant/releases/tag/rel/1.10.17) |
 | **Gradle** | [`9.7.0`](https://github.com/gradle/gradle/releases/tag/v9.7.0) |
-| **Groovy** | [`6.0.0-beta-1`](https://github.com/apache/groovy/releases/tag/GROOVY_6_0_0-beta-1) |
+| **Groovy** | [`6.0.0-beta-2`](https://github.com/apache/groovy/releases/tag/GROOVY_6_0_0-beta-2) |
 | **JDK** | [`21.0.12-tem`](https://sdkman.io/jdks) |
 | **Kotlin** | [`2.4.10`](https://github.com/JetBrains/kotlin/releases/tag/v2.4.10) |
 | **Maven** | [`3.9.16`](https://github.com/apache/maven/releases/tag/maven-3.9.16) |
 
-> 🔄 Last updated: 2026-08-12T05:10:40+02:00 · [Build #78](https://github.com/stefanbosak/github-sandbox/actions/runs/31588289920)
+> 🔄 Last updated: 2026-08-12T12:41:03+02:00 · [Build #80](https://github.com/stefanbosak/github-sandbox/actions/runs/32045523182)
 <!-- VERSION_INFO_END -->
 
 ---
